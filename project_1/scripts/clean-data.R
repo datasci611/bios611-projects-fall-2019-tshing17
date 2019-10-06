@@ -76,6 +76,13 @@ notesofservice %>%
 ### I will not use the Notes.of.Service variable to supplement the other columns.
 ## Instead I will focus on the later records, but it important to note these trends in data collection
 
+
+
+## Check for outliers by looking at summary distributions:
+## 1. General summary of variable (mean, median, min max, etc)
+## 2. Check the quantiles by 5%
+## 3. Check the quantiles 95-100 by 1%
+## 4. Visual depiction of data via boxplots
 # ----------------------------------------------------
 check_outliers <- function(d, v, t){
   print(summary(v))
@@ -88,8 +95,9 @@ check_outliers <- function(d, v, t){
 # Check Food.Provided.for - could be some outliers, max = 1151?
 check_outliers(dat3, dat3$Food.Provided.for, 'Distribution of Food Provided For')
 
+## Based on my outlier assessment, I will set the top 1% of data to missing
 dat4 = dat3 %>%
-  mutate(Food.Provided.for.b = ifelse(Food.Provided.for>7, NA, Food.Provided.for)) #setting top 1% of data to missing
+  mutate(Food.Provided.for.b = ifelse(Food.Provided.for>7, NA, Food.Provided.for)) 
 
 check_outliers(dat4, dat4$Food.Provided.for.b, 'Distribution of Food Provided For (excluding outliers)')
 
@@ -97,19 +105,20 @@ check_outliers(dat4, dat4$Food.Provided.for.b, 'Distribution of Food Provided Fo
 # Check Distribution of Food.Pounds - could be some outliers, max=450121
 check_outliers(dat4, dat4$Food.Pounds, 'Distribution of Food in Pounds')
 
+## Based on my outlier assessment, I will set the top 1% of data to missing
 dat5 = dat4 %>%
-  mutate(Food.Pounds.b = ifelse(Food.Pounds>60, NA, Food.Pounds)) #setting top 1% of data to missing
+  mutate(Food.Pounds.b = ifelse(Food.Pounds>60, NA, Food.Pounds))
 
 check_outliers(dat5, dat5$Food.Pounds.b, 'Distribution of Food in Pounds (excluding outliers)')
 
 # Check Distribution of Clothing.Items - could be some outliers, max=247
 check_outliers(dat5, dat5$Clothing.Items, 'Distribution of Clothing Items')
 
+## Based on my outlier assessment, I will set the top 1% of data to missing
 dat6 = dat5 %>%
   mutate(Clothing.Items.b = ifelse(Clothing.Items>28, NA, Clothing.Items))
 
 check_outliers(dat6, dat6$Clothing.Items.b, 'Distribution of Clothing Items (excluding outliers)')
-
 
 
 # Check Distribution of Diapers - could be some outliers, max=5303 - Not using so will not clean
@@ -126,5 +135,5 @@ dat7=dat6 %>%
   select(-Food.Provided.for, -Food.Pounds, -Clothing.Items) 
   
 write_rds(dat7,'Anl_UMD_Services_190921.rds')
-
+write.table(dat7,'Anl_UMD_Services_190921.txt')
 

@@ -1,0 +1,396 @@
+---
+title: "Project 1"
+author: "Tracie Shing"
+output: html_document
+---
+
+## Introduction
+Urban Ministries of Durham (UMD) is an organization that connects with the community to end homelessness and fight poverty.  UMD has three main programs: the Community Shelter, the Community Cafe, and the Food Pantry and Clothing Closet.  Over the years, UMD has collected data on their services provided at the Community Resource Center which consists of both the Community Cafe and the Food Pantry and Clothing Closet.  This includes a record of whether food, clothing, or items were received by an individual or family who visited the community center.
+
+Therefore, this project seeks to answer three main questions:
+
+1. How often is the Community Resource Center being used and when is it being used?
+2. What resources are being used and when?
+3. Is there any correlation between the resources being used and the amount of funding or donations?
+
+I will use the data provided by UMD called [*UMD_Services_Provided_20190719.tsv*](https://github.com/datasci611/bios611-projects-fall-2019-tshing17/tree/master/project_1/data), subset to service records between January 2001 and June 2019.  These years were chosen because the combined Durham Community Shelter for HOPE, St. Philip's Community Cafe, and the United Methodist Mission Society merged to form Urban Ministries of Durham in 2001.  Additionally, the data from July and August 2019 were partial.  (See [clean-data.R](https://github.com/datasci611/bios611-projects-fall-2019-tshing17/tree/master/project_1/scripts) for additional data cleaning documentation.)
+
+In the Urban Ministries service records, the date of the services provided (*Date*) will be a key variable in exploring these questions.  Other variables of interest are food provided for (*Food.Provided.for*), food in pounds (*Food.Pounds*) and clothing items (*Clothing.Items*).
+
+To examine the relationship between resources and donations, publicly available tax return data will be used.  The IRS requires all tax-exempt non-profits to make their annual returns publicly available.  IRS Form 990 for Urban Ministries of Durham can be found on [ProPublica](https://projects.propublica.org/nonprofits/organizations/581505891).  For calendar years 2004-2017, Part VIII, line 1h was used to find the total contributions and grants and Part VIII, line 1g was used to find non-cash contributions.  For calendar years 2000-2003, Part 1 question 1d was used for contributions. The file [*UMD IRS 990.txt*](https://github.com/datasci611/bios611-projects-fall-2019-tshing17/tree/master/project_1/data) consolidates the relevant lines from the 990 tax returns from 2000-2017.
+
+This project is an exploratory analysis of the services provided by UMD.  Yearly and monthly frequencies of clients who used service will be tabulated.  Similarly, the total number of visits per client per year will be calculated then averaged across all persons for each year.  Yearly and monthly averages of food in pounds and clothing items will be tabulated.  Trends over time for total visits, food, and clothing will be evaluated.  Correlations between funding and resources used will be assessed.
+
+The results of these exploratory analyses are important to advise decision-making in order to provide better service to clients in the future.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(ggpubr)
+
+dat<-read_rds("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_1/data/Anl_UMD_Services_190921.rds")
+```
+
+## Client Use of the Urban Ministries Resource Center
+
+```{r create client summary}
+client = dat %>%
+  group_by(Client.File.Number) %>%
+  summarise(
+    total.visits=n(),
+    first.date=min(mthdyyr),
+    last.date=max(mthdyyr)) 
+
+clientmultvis = summarise(client, multvisit=sum(total.visits>1), singlevisit=sum(total.visits<=1)) %>%
+  mutate(propvisit=(multvisit/(multvisit+singlevisit))*100)
+
+client2 = client %>%
+  filter(total.visits>1) %>%
+  mutate(visittime=as.numeric(last.date-first.date+1)/365) %>%
+  mutate(visitrate = total.visits/visittime)
+```
+
+In this report, I will define a client as a single individual or family entity that uses the resource center based on the unique Client File Number in the UMD services provided data.  Additionally, I will define a client visit as single record in the UMD services provided data that records when a client was provided any food, clothing, or other resources.  Thus, a client visit will be a unique date in which a client receives any resources.
+
+Between 2001 and June 2019 there were `r nrow(client)` clients that used the community resource center.  The average number of visits for a client was `r round(mean(client$total.visits),2)` visits.  Of the `r nrow(client)` clients that used the resource center, `r round(clientmultvis$propvisit,2)`% used the resource more than once.  For those who have used the resource center more than once, the average time these clients have been using the resource center, from their first visit to present, is `r round(mean(client2$visittime),2)` years.  This results in an average visit rate of `r round(mean(client2$visitrate),2)` visits per year.
+
+### Client Use by Year
+
+The number of clients who used the resource center and the number of visits are shown by year in **Figure 1**.
+
+```{r create yearly plot}
+year.client = dat %>%
+  group_by(year, month, mthyr, Client.File.Number) %>%
+  summarise(total.visits=n()) %>%
+  arrange(Client.File.Number)
+
+yearplot1a = year.client %>%
+  group_by(year) %>%
+  summarise(total.client=n())
+
+yearplot1b = dat %>%
+  group_by(year) %>%
+  summarise(total.visits=n()) 
+
+yearplot1c = full_join(yearplot1a, yearplot1b, by="year") %>% 
+  gather(total.visits, total.client, key='type', value="n")
+
+ggplot(yearplot1c, aes(x=year, y=n, color=type))+geom_point()+geom_line()+
+  labs(x='Year', 
+       y='Total', 
+       title='Figure 1. Total Yearly Clients and Visits to UMD Resource Center 2001-2019')+
+  scale_color_discrete(name = "Type", labels = c("Clients", "Visits"))+
+  theme_light()
+```
+
+There has been a steady increase in both the number of clients and the number of client visits to the resource center over time. It is important to note that this increase could be due to better data collection methods over time. 
+
+There is always a greater number of client visits compared to clients as clients sometimes visit the resource center more than once.  However, in 2009 there appears to be a greater ratio of visits to clients suggests clients made more visits to the resource center than usual.
+
+**Figure 1** shows a sharp decline at 2019, however this is due to the partial year data.  The current number of clients that have used the resource center between January and June of 2019 is `r yearplot1c %>% filter(year==2019, type=='total.client') %>% select(n)`.  If the same number of clients use the resource center in the second half of the year, then `r 2*(yearplot1c %>% filter(year==2019, type=='total.client') %>% select(n))` will use the resource center, which is more on trend with previous years.  Monthly trends may instead provide additional insight into the current year.
+
+### Client Use by Month
+
+The number of clients who used the resource center and the number of visits are shown by month in **Figure 2**.  Monthly trends could suggest seasonal or cyclic trends that may be important understand.
+
+```{r create monthly plot}
+monthplot1a = year.client %>%
+  group_by(year, month, mthyr) %>%
+  summarise(total.client=n())
+
+monthplot1b = dat %>%
+  group_by(year, month, mthyr) %>%
+  summarise(total.visits=n()) 
+
+monthplot1c = full_join(monthplot1a, monthplot1b, by=c("year","month","mthyr")) %>% 
+  gather(total.visits, total.client, key='type', value="n")
+
+ggplot(monthplot1c, aes(x=mthyr, y=n, color=type))+geom_point()+geom_line()+
+  labs(x='Year',
+       y='Total',
+       title='Figure 2. Total Monthly Clients and Visits to UMD Resource Center 2001-2019')+
+  scale_color_discrete(name = "Type", labels = c("Clients", "Visits"))+
+  theme_light()
+
+```
+
+Again, there is the steady increase in both the number of clients and the number of client visits to the resource center over time. Visually, there appears to be some distinction in the rate of increase in visits and clients between 2011 and 2019 compared to the rate between 2006 and 2010. Adding trend lines to the number of clients over time is shown in **Figure 3**.
+
+```{r}
+ggplot(data=monthplot1a, aes(x=mthyr, y=total.client))+geom_point()+geom_line()+
+  labs(x='Year',
+       y='Total Clients',
+       title='Figure 3. Total Monthly Clients to UMD Resource Center 2001-2019 with Trends')+
+  theme_light()+
+  geom_smooth(data=filter(monthplot1a,year>=2002, year<2009),method = "lm", se = FALSE)+
+  geom_smooth(data=filter(monthplot1a,year>=2009),method = "lm", se = FALSE)
+```
+
+These rates of change appear to be similar as seen be mostly parallel trend lines, even though the number of clients after 2009 is greater than the number clients before 2009.  The possible distinction before and after 2009 may be due to data recording practices.
+
+There were no obvious months with more clients or visits according to **Figure 2**, however this may be due to the large number of months plotted.  Instead **Figure 4** shows the number of clients who used the resource center and the number of visits are shown by month for the last 5 years.
+
+```{r create monthly plot 5 year}
+monthplot2c = filter(monthplot1c, mthyr>=as.Date('2014-01-01'), mthyr<as.Date('2019-01-01'))
+  
+ggplot(monthplot2c, aes(x=mthyr, y=n, color=type))+geom_point()+geom_line()+
+  labs(x='Month', 
+       y='Total', 
+       title='Figure 4. Total Monthly Clients and Visits to UMD Resource Center 2014-2018')+
+  scale_color_discrete(name = "Type", labels = c("Clients", "Visits"))+
+  theme_light()
+
+```
+
+**Figure 4** shows that in the last 5 years, the least number of clients visited the resource center in February of 2015.  Similarly, the second lowest number of clients visited the resource center in December of 2018.
+
+Trends of which months clients are more likely to use the resource center are better seen in **Figures 5 and 6** where the number of clients who used the resource center and the number of visits for the last 5 years are plotted simultaneously.
+
+```{r create overlay monthly plot 5 year}
+monthplot2c %>%
+  filter(type=='total.client') %>%
+  ggplot(aes(x=month, y=n, color=as.character(year)))+geom_point()+geom_line()+
+  labs(x='Month', 
+       y='Total Clients to Resource Center', 
+       title='Figure 5. Total Monthly Clients to UMD Resource Center 2014-2018')+
+  theme_light()+
+  scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12), limits=c(1,12))+
+  scale_color_discrete(name = "Year")+
+  facet_wrap(.~as.character(year))
+
+monthplot2c %>%
+  filter(type=='total.visits') %>%
+  ggplot(aes(x=month, y=n, color=as.character(year)))+geom_point()+geom_line()+
+  labs(x='Month', 
+       y='Total Visits to Resource Center', 
+       title='Figure 6. Total Monthly Visits to UMD Resource Center 2014-2018')+
+  theme_light()+
+  scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12), limits=c(1,12))+
+  scale_color_discrete(name = "Year")+
+  facet_wrap(.~as.character(year))
+```
+
+In both 2016 and 2018, the least number of clients occurred in December, with `r filter(monthplot2c, year==2016, month==12, type=='total.clients')$n` and `r filter(monthplot2c, year==2018, month==1, type=='total.clients')$n` visits respectively.  Again, in both 2016 and 2018, the least number of visits occurred in December, with `r filter(monthplot2c, year==2016, month==12, type=='total.visits')$n` and `r filter(monthplot2c, year==2018, month==1, type=='total.visits')$n` visits respectively. Similarly, in  2017, there was a large decrease in the number of clients and the number of visits that occurred between November and December.  Thus, in recent years, there appears to be a decline in usage of the resource center between November and December.
+
+## Food Provided by Urban Ministries
+
+Urban Ministries of Durham also provides both food and clothing to community members seeking assistance.  Data on the number of people in the family for which food was provided for each client was recorded consistently since 2001.  In 2006, Urban Ministries also began recording the amount of food in pounds that each client received at each visit.
+
+```{r create client summary food provided}
+dat = dat %>% mutate(yn.Food.Provided = ifelse(Food.Provided.for.b==0|is.na(Food.Provided.for.b), 0, 1))
+
+food.client = dat %>%
+  filter(yn.Food.Provided==1) %>%
+  group_by(Client.File.Number) %>%
+  summarise(ave.Food.Provided=mean(Food.Provided.for.b))
+```
+
+Between 2001 and June 2019 there were `r nrow(food.client)` clients that received food from the community resource center.  The average number of people in the family for which food was provided for a client was `r round(mean(food.client$ave.Food.Provided),2)`.  Therefore Urban Ministries served approximately `r format(nrow(food.client)*round(mean(food.client$ave.Food.Provided),0), scientific=FALSE)` people from January 2001 to June 2019.
+
+### Total Food Provided by Year
+
+The total amount of food provided (in thousands of pounds) is shown by year in **Figure 7**.
+
+```{r food provided year}
+year.food.pounds = dat %>%
+  group_by(year) %>%
+  summarise( total.food.pounds = sum(Food.Pounds.b, na.rm=TRUE)) %>%
+  arrange(year)
+## really looks like they only collected Food in pounds data from 2006 onwards
+
+ggplot(year.food.pounds, aes(x=year, y=total.food.pounds/1000))+geom_point()+geom_line()+
+  labs(x='Year', y='Total Food in Thousands of Pounds', title='Figure 7. Total Food Provided by UMD 2001-2019')+
+  theme_light()
+```
+
+Data on food in pounds was collected primarily beginning in 2006.  The flat trend from 2001-2005 is due to lack of data collection.  Similarly, the decline in 2019 is due to the partial year.  However, there is a noticeable increasing trend in the total amount of food provided between 2006 and 2018.  
+
+### Total Food Provided by Month
+
+In addition, the total amount of food provided (in pounds) is shown by month in **Figure 8**. 
+
+```{r food provided month}
+month.food.pounds = dat %>%
+  group_by(year, month, mthyr) %>%
+  summarise( total.food.pounds = sum(Food.Pounds.b, na.rm=TRUE)) %>%
+  arrange(mthyr)
+
+ggplot(month.food.pounds, aes(x=mthyr, y=total.food.pounds/1000))+geom_point()+geom_line()+
+  labs(x='Year', y='Total Food in Thousands of Pounds', title='Figure 8. Total Monthly Food Provided by UMD 2001-2019')+
+  theme_light()+
+  geom_smooth(data=filter(month.food.pounds,year>=2006, year<=2010),method = "lm", se = FALSE)+
+  geom_smooth(data=filter(month.food.pounds,year>2010),method = "lm", se = FALSE)
+```
+
+According to the monthly trend, the exact month data collection began appears to be in December of 2005, hence the flat trend line prior to 2006. Overall, the total food provided does appear to be increasing between 2006 to June 2019.  However, there does appear to be a noticeable change in the rate of increase.  There is a lower rate of increase in the amount of food provided between 2011 and 2019 compared to the rate between 2006 and 2010.  This may be due to a function of better data collection.  Otherwise this suggests that there may be some stabilization in the total amount of food provided.
+
+
+## Clothing Provided by Urban Ministries
+
+```{r create client summary clothing}
+dat = dat %>% mutate(yn.Clothing.Items = ifelse(Clothing.Items.b==0|is.na(Clothing.Items.b), 0, 1))
+
+clothing.client = dat %>%
+  filter(yn.Clothing.Items==1) %>%
+  group_by(Client.File.Number) %>%
+  summarise(ave.Clothing.Items=mean(Clothing.Items.b))
+```
+
+Records of the number of clothing items a client received was recorded since 2001.  Between 2001 and June 2019 there were `r nrow(clothing.client)` clients that received at least one clothing item from the community resource center.  The average number of clothing items each client received was `r round(mean(clothing.client$ave.Clothing.Items),2)`.  Urban Ministries provided a total of `r sum(dat$Clothing.Items.b, na.rm=TRUE)` items of clothing between January 2001 and June 2019.  However, it is important to note that these may be underestimates of the actual number of clothing items provided.  Sometimes service records include a "Service Note" in which a description of some clothing items were provided.  In this analysis, I will only consider those recorded in the *Clothing.Items* column of the data set due to the unknown reliability of the service note.
+
+### Total Clothing Items Provided by Year
+
+The total number of clothing items provided by Urban Ministries is shown by year in **Figure 9**.
+
+```{r clothing year}
+year.clothing = dat %>%
+  group_by(year) %>%
+  summarise( total.clothing = sum(Clothing.Items.b, na.rm=TRUE)) %>%
+  arrange(year)
+
+ggplot(year.clothing, aes(x=year, y=total.clothing))+geom_point()+geom_line()+
+  labs(x='Year', y='Total Clothing Items', title='Figure 9. Total Yearly Clothing Items Provided by UMD 2001-2019')+
+  theme_light()
+```
+
+Overall there is an increasing trend in the total number of clothing items provided. There was a sharp increase in the number of clothing items that were provided between 2009 and 2010.  Since 2010, over 40,000 items of clothing were provided to clients each year with over 50,000 clothing items provided in 2014. The number of clothing items appears to be trending downward from 2014 to present.
+
+### Total Clothing Items Provided by Month
+
+Similarly, the total number of clothing items is shown by month in **Figure 10**. 
+
+```{r clothing month}
+month.clothing = dat %>%
+  group_by(year, month, mthyr) %>%
+  summarise( total.clothing = sum(Clothing.Items.b, na.rm=TRUE)) %>%
+  arrange(mthyr)
+
+ggplot(month.clothing, aes(x=mthyr, y=total.clothing))+geom_point()+geom_line()+
+  labs(x='Year', y='Total Clothing Items', title='Figure 10. Total Monthly Clothing Items Provided by UMD 2001-2019')+
+  theme_light()+
+  geom_smooth(data=filter(month.clothing,year>=2002, year<2009),method = "lm", se = FALSE)+
+  geom_smooth(data=filter(month.clothing,year>=2009),method = "lm", se = FALSE)
+```
+
+According to the monthly trends, the number of clothing items provided was only recorded beginning in 2002. There are two distinct trends in the number of clothing items provided: a steady increase but lower total between 2002 and 2008 and a slight increase but larger total items between 2009 to June 2019.  Interestingly, the amount of total clothing items fluctuates greatly between 2009 and June 2019 whereas the monthly fluctuations between 2002 and 2008 are minimal.
+
+## Relationship between Resources and Funding
+
+```{r}
+irs<-read.delim("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_1/data/UMD IRS 990.txt", sep='\t', header=TRUE)
+```
+The IRS requires all U.S. tax-exempt nonprofits to make their three most recent Form 990 or 990-PF annual returns (commonly called "990s") publicly available.  IRS forms 990 for Urban Ministries of Durham for calendar years 2000-2017 can be found on [ProPublica](https://projects.propublica.org/nonprofits/organizations/581505891).  Total contributions and grants and non-cash Contributions are plotted over time in **Figure 11**.
+
+```{r message=FALSE, warning=FALSE}
+irs2 = irs %>% 
+  mutate(Cash.Contributions=Contributions.and.Grants-Noncash.Contributions)%>%
+  gather(Contributions.and.Grants, Noncash.Contributions, Cash.Contributions, key='type', value='contributions')
+
+ggplot(irs2, aes(x=Calendar.Year, y=contributions/1000, color=type))+geom_point()+geom_line()+
+  labs(x='Year', y='Contributions in Thousands of Dollars', title='Figure 11. Contributions to UMD According to IRS Form 990, 2000-2017')+
+  theme_light()+
+  scale_color_discrete(name = "Type", 
+                       limits = c('Contributions.and.Grants', 'Cash.Contributions','Noncash.Contributions'),
+                       labels = c("Total Contributions", "Cash Contributions", "Non-Cash Contributions"))
+```
+
+The total contributions appear to be increasing over time.  However, while cash contributions appear to be increasing over time, non-cash contributions appear to be stagnant after 2013.  Due to these different trends, we will assess the correlation between cash contributions and resources separately from non-cash contributions.  Only the years from 2005-2017 will be assessed.
+
+```{r create food corr data}
+v.food.pounds = year.food.pounds %>% 
+  filter(year>=2005, year<=2017) %>% 
+  select(year, total.food.pounds) %>%
+  arrange(year)
+
+v.irs = irs %>% filter(Calendar.Year>=2005, Calendar.Year<=2017) %>% 
+  mutate(Cash.Contributions=Contributions.and.Grants-Noncash.Contributions)%>%
+  select(Calendar.Year, Cash.Contributions, Noncash.Contributions)%>%
+  arrange(Calendar.Year)
+
+corr.food = full_join(v.food.pounds, v.irs, by = c("year" = "Calendar.Year"))
+
+```
+
+**Figures 12 & 13** show the correlation between contributions according to IRS 990 forms and the yearly total food in pounds provided.
+
+```{r create food corr plots}
+ggplot(data=corr.food, aes(x=Cash.Contributions/1000, y=total.food.pounds/1000))+
+  geom_point()+
+  geom_smooth(method=lm)+
+  labs(x="Cash Contributions (in Thousands of Dollars)",
+       y="Total Food in Thousands of Pounds", 
+       title="Figure 12. Pearson Correlation between Cash Contributions (2005-2017) \nand Food in Pounds")+
+  stat_cor(method = "pearson")+
+  theme_light()+
+  geom_text(aes(label=year), hjust=0, vjust=0)
+
+ggplot(data=corr.food, aes(x=Noncash.Contributions/1000, y=total.food.pounds/1000))+
+  geom_point()+
+  geom_smooth(method=lm)+
+  labs(x="Non-Cash Contributions (in Thousands of Dollars)",
+       y="Total Food in Thousands of Pounds", 
+       title="Figure 13. Pearson Correlation between Non-Cash Contributions (2005-2017) \nand Food in Pounds")+
+  stat_cor(method = "pearson")+
+  theme_light()+
+  geom_text(aes(label=year), hjust=0, vjust=0)
+```
+
+There is a slightly higher correlation between non-cash contributions and total food in pounds compared to the correlation between cash contributions and total food in pounds.
+
+Similar correlations were assessed for the yearly total clothing items provided.
+
+
+```{r create clothing corr data}
+v.clothing = year.clothing %>% 
+  filter(year>=2005, year<=2017) %>% 
+  select(year, total.clothing) %>%
+  arrange(year)
+
+corr.clothing = full_join(v.clothing, v.irs, by = c("year" = "Calendar.Year"))
+
+```
+
+**Figures 14 & 15** show the correlation between contributions according to IRS 990 forms and the total clothing provided.
+
+```{r create clothing corr plots}
+
+ggplot(data=corr.clothing, aes(x=Cash.Contributions/1000, y=total.clothing))+
+  geom_point()+
+  geom_smooth(method=lm)+
+  labs(x="Cash Contributions (in Thousands of Dollars)",
+       y="Total Clothing Items", 
+       title="Figure 14. Pearson Correlation between Cash Contributions (2005-2017) \nand Clothing Items Provided")+
+  stat_cor(method = "pearson")+
+  theme_light()+
+  geom_text(aes(label=year), hjust=0, vjust=0)
+
+ggplot(data=corr.clothing, aes(x=Noncash.Contributions/1000, y=total.clothing))+
+  geom_point()+
+  geom_smooth(method=lm)+
+  labs(x="Non-cash Contributions (in Thousands of Dollars)",
+       y="Total Clothing Items", 
+       title="Figure 15. Pearson Correlation between Non-Cash Contributions (2005-2017) \nand Clothing Items Provided")+
+  stat_cor(method = "pearson")+
+  theme_light()+
+  geom_text(aes(label=year), hjust=0, vjust=0)
+```
+
+Again, the correlation between non-cash contributions and total clothing items is higher than the correlation between cash contributions and total clothing items.  However, there are slightly lower correlations between both non-cash and cash contributions and total clothing items compared to the correlations with food.  
+
+## Conclusions
+
+Urban Ministries has served over 15000 clients since 2001.  The number of clients who visit the Urban Ministries Resource Center continues to increase each year.  Additionally, this corresponds to an increasing number of visits to the resource center where clients are able to obtain food and clothing.  In 2018 alone, Urban Ministries provided over 125,000 pounds of food to clients.  While the amount of food in pounds is also increasing, there is some indication that the number of clothing items provided may be in decline.
+
+The overall increasing trends in all aspects of Urban Ministries services may be a function of better data collection over time.  There appears to be some noticeable distinction in the number of clients, visits, food and clothing provided before and after 2009.  Interestingly, this may be right after the 2008 financial crisis.
+
+The trends in food and clothing suggest that either additional clothing resources are needed or clients are seeking clothing items less often. It is also possible that clients are seeking food over clothing items.  It would be of interest to determine what items clients actually need when they visit the center in comparison to what they are able to receive.
+
+The amount of food provided and the amount of clothing provided appears to be correlated with the amount of contributions and grants received.  Cash contributions appear to have a higher correlation with food provided, more so than clothing items.  As expected, non-cash contributions are highly correlated with the amount of food and total clothing items provided.  This supports and highlights the benefit food and clothing donations drives.  However, as data from the IRS suggests, non-cash contributions have been stagnant in the last few years.  Increased donation drives to obtain food and clothing rather than cash may be an area of future improvement for Urban Ministries to directly benefits clients.
+
+
+
+
+
+
+
+
