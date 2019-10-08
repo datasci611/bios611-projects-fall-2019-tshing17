@@ -1,0 +1,199 @@
+---
+title: "An Analysis of Resources Provided by Urban Ministries of Durham, 2001-2019"
+author: "Tracie Shing"
+date: "October 7, 2019"
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(ggpubr)
+
+dat<-read_rds("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_1/data/Anl_UMD_Services_190921.rds")
+```
+
+## Introduction
+- Urban Ministries of Durham (UMD) is an organization that works to end homelessness and fight poverty.
+- UMD has collected data on their services provided at the Community Resource Center
+    + Client File Number
+    + Date of Service
+    + Food Provided for
+    + Food in Pounds
+    + Clothing Items
+- How often is the Community Resource Center being used and when is it being used?
+- *What resources (food) are being used and when?*
+- *Is there any correlation between the resources (food) being used and the amount of funding or donations?*
+
+
+## Client Use of the Urban Ministries Resource Center
+```{r create client summary}
+client = dat %>%
+  group_by(Client.File.Number) %>%
+  summarise(
+    total.visits=n(),
+    first.date=min(mthdyyr),
+    last.date=max(mthdyyr)) 
+
+clientmultvis = summarise(client, multvisit=sum(total.visits>1), singlevisit=sum(total.visits<=1)) %>%
+  mutate(propvisit=(multvisit/(multvisit+singlevisit))*100)
+
+client2 = client %>%
+  filter(total.visits>1) %>%
+  mutate(visittime=as.numeric(last.date-first.date+1)/365) %>%
+  mutate(visitrate = total.visits/visittime)
+```
+
+- Between 2001 and June 2019 there were `r nrow(client)` clients that used the community resource center.
+- `r round(clientmultvis$propvisit,2)`% of clients used the resource center more than once.
+- The average number of visits for a client was `r round(mean(client$total.visits),2)` visits.
+- The average time clients have been using the resource center (for those who have visited more than once) is `r round(mean(client2$visittime),2)` years.
+
+## Trends in Clients and Visits Over Time
+```{r}
+year.client = dat %>%
+  group_by(year, month, mthyr, Client.File.Number) %>%
+  summarise(total.visits=n()) %>%
+  arrange(Client.File.Number)
+
+monthplot1a = year.client %>%
+  group_by(year, month, mthyr) %>%
+  summarise(total.client=n())
+
+monthplot1b = dat %>%
+  group_by(year, month, mthyr) %>%
+  summarise(total.visits=n()) 
+
+monthplot1c = full_join(monthplot1a, monthplot1b, by=c("year","month","mthyr")) %>% 
+  gather(total.visits, total.client, key='type', value="n")
+
+ggplot(monthplot1c, aes(x=mthyr, y=n, color=type))+geom_point()+geom_line()+
+  labs(x='Year',
+       y='Total',
+       title='Figure 1. Total Monthly Clients and Visits to UMD Resource Center 2001-2019')+
+  scale_color_discrete(name = "Type", labels = c("Clients", "Visits"))+
+  theme_light()+theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14,face="bold"),
+        plot.title=element_text(size=14, face="bold"))+
+  geom_smooth(data=filter(monthplot1c,year>=2002, year<2009, type=='total.client'),method = "lm", se = FALSE, color='blue')+
+  geom_smooth(data=filter(monthplot1c,year>=2009, type=='total.client'),method = "lm", se = FALSE, color='blue')
+```
+
+
+## Food Provided by Urban Ministries
+```{r create client summary food provided}
+dat = dat %>% mutate(yn.Food.Provided = ifelse(Food.Provided.for.b==0|is.na(Food.Provided.for.b), 0, 1))
+
+food.client = dat %>%
+  filter(yn.Food.Provided==1) %>%
+  group_by(Client.File.Number) %>%
+  summarise(ave.Food.Provided=mean(Food.Provided.for.b))
+```
+
+- Between 2001 and June 2019 there were `r nrow(food.client)` clients that received food from the community resource center.
+- The average number of people in the family for which food was provided for a client was `r round(mean(food.client$ave.Food.Provided),2)`.
+- UMD served approximately `r format(nrow(food.client)*round(mean(food.client$ave.Food.Provided),0), scientific=FALSE)` people.
+
+## Trends in Food in Pounds Provided Over Time
+```{r food provided month}
+month.food.pounds = dat %>%
+  group_by(year, month, mthyr) %>%
+  summarise( total.food.pounds = sum(Food.Pounds.b, na.rm=TRUE)) %>%
+  arrange(mthyr)
+
+ggplot(month.food.pounds, aes(x=mthyr, y=total.food.pounds/1000))+geom_point()+geom_line()+
+  labs(x='Year', y='Total Food in Thousands of Pounds', title='Figure 2. Total Monthly Food Provided by UMD 2001-2019')+
+  theme_light()+theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14,face="bold"),
+        plot.title=element_text(size=14, face="bold"))+
+  geom_smooth(data=filter(month.food.pounds,year>=2006, year<=2010),method = "lm", se = FALSE)+
+  geom_smooth(data=filter(month.food.pounds,year>2010),method = "lm", se = FALSE)
+```
+
+## IRS Data
+```{r}
+irs<-read.delim("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_1/data/UMD IRS 990.txt", sep='\t', header=TRUE)
+```
+- The IRS requires all U.S. tax-exempt nonprofits to make their three most recent Form 990 or 990-PF annual returns (commonly called "990s") publicly available.
+- IRS forms 990 for Urban Ministries of Durham for calendar years 2000-2017 can be found on [\textcolor{blue}{ProPublica}](https://projects.propublica.org/nonprofits/organizations/581505891).
+-  For calendar years 2004-2017:
+     + Part VIII, line 1h was used to find the total contributions and grants
+     + Part VIII, line 1g was used to find non-cash contributions
+- For calendar years 2000-2003:
+     + Part 1 question 1d was used for contributions
+
+## Trends in Contributions Over Time
+```{r message=FALSE, warning=FALSE}
+irs2 = irs %>% 
+  mutate(Cash.Contributions=Contributions.and.Grants-Noncash.Contributions)%>%
+  gather(Contributions.and.Grants, Noncash.Contributions, Cash.Contributions, key='type', value='contributions')
+
+ggplot(irs2, aes(x=Calendar.Year, y=contributions/1000, color=type))+geom_point()+geom_line()+
+  labs(x='Year', y='Contributions in Thousands of Dollars', title='Figure 3. Contributions to UMD According to IRS Form 990, 2000-2017')+
+  theme_light()+theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14,face="bold"),
+        plot.title=element_text(size=14, face="bold"))+
+  scale_color_discrete(name = "Type", 
+                       limits = c('Contributions.and.Grants', 'Cash.Contributions','Noncash.Contributions'),
+                       labels = c("Total Contributions", "Cash Contributions", "Non-Cash Contributions"))
+```
+
+## Relationship between Food in Pounds and Cash Contributions
+```{r create food corr data}
+year.food.pounds = dat %>%
+  group_by(year) %>%
+  summarise( total.food.pounds = sum(Food.Pounds.b, na.rm=TRUE)) %>%
+  arrange(year)
+
+v.food.pounds = year.food.pounds %>%
+  filter(year>=2005, year<=2017) %>%
+  select(year, total.food.pounds) %>%
+  arrange(year)
+
+v.irs = irs %>% filter(Calendar.Year>=2005, Calendar.Year<=2017) %>%
+  mutate(Cash.Contributions=Contributions.and.Grants-Noncash.Contributions)%>%
+  select(Calendar.Year, Cash.Contributions, Noncash.Contributions)%>%
+  arrange(Calendar.Year)
+
+corr.food = full_join(v.food.pounds, v.irs, by = c("year" = "Calendar.Year"))
+```
+
+
+```{r create food corr plot1 }
+ggplot(data=corr.food, aes(x=Cash.Contributions/1000, y=total.food.pounds/1000))+
+  geom_point()+
+  geom_smooth(method=lm)+
+  labs(x="Cash Contributions (in Thousands of Dollars)",
+       y="Total Food in Thousands of Pounds",
+       title="Figure 4. Pearson Correlation between Cash Contributions (2005-2017) and Food in Pounds")+
+  stat_cor(method = "pearson", size=8, label.x.npc = 'left', label.y.npc = 'top')+
+  theme_light()+theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14,face="bold"),
+        plot.title=element_text(size=14, face="bold"))+
+  geom_text(aes(label=year), hjust=0, vjust=0)
+```
+
+## Relationship between Food in Pounds and Non-Cash Contributions
+```{r create food corr plot 2}
+ggplot(data=corr.food, aes(x=Noncash.Contributions/1000, y=total.food.pounds/1000))+
+  geom_point()+
+  geom_smooth(method=lm)+
+  labs(x="Non-Cash Contributions (in Thousands of Dollars)",
+       y="Total Food in Thousands of Pounds",
+       title="Figure 5. Pearson Correlation between Non-Cash Contributions (2005-2017) and Food in Pounds")+
+  stat_cor(method = "pearson", size=8, label.x.npc = 'left', label.y.npc = 'top')+
+  theme_light()+theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14,face="bold"),
+        plot.title=element_text(size=14, face="bold"))+
+  geom_text(aes(label=year), hjust=0, vjust=0)
+```
+
+## Conclusions
+- Urban Ministries has served over 15000 clients since 2001. 
+- Trends in food suggest that the amount of food provided is increasing over time with a possible shift in 2009
+- Non-cash contributions have been stagnant in the last few years.
+- The amount of food provided is correlated with the amount of contributions and grants received.
+    + Greater correlation between non-cash contributions and food compared to cash-contributions and food
+    + Highlights the benefits of donation drives
+- The overall increasing trends in all aspects of Urban Ministries services may be a function of better data collection over time.
+
