@@ -22,10 +22,10 @@ The raw data is found in the **data** folder called *UMD_Services_Provided_20190
 
 In the Urban Ministries service records, the date of the services provided (*Date*) will be a key variable in exploring these questions.  Other variables of interest are food in pounds (*Food.Pounds*) and clothing items (*Clothing.Items*).  A listing of all variables in the raw data is found in the file *UMD_Services_Provided_metadata_20190719.tsv* in the **data** folder.
 
-Plots will be viewable with and without extreme values for an individual client visit.  Extreme values of food in pounds consisted of more than 60 pounds provided to a client during a single visit to the resource center.  Similarly, extreme values of clothing items consisted of providing more than 28 clothing items to a client during a single visit to the resource center.
-
 ## Analyses
 
 It is important to note that the data file consists of 1 record per visit, wherein a single client (identified by the *Client.File.Number*) may have multiple records.  Thus, all plots are aggregated totals of all resources used during the month.
 
 Via a Shiny dashboard, users will be able to select the resource of interest, remove outliers, and view specific dates of interest for totals resource use over time.
+
+Plots will be viewable with and without extreme values for an individual client visit.  Extreme values of food in pounds consisted of more than 60 pounds provided to a client during a single visit to the resource center.  Similarly, extreme values of clothing items consisted of providing more than 28 clothing items to a client during a single visit to the resource center.
