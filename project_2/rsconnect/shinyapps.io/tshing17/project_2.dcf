@@ -5,9 +5,9 @@ account: tshing17
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1354120
-bundleId: 2517814
+bundleId: 2538810
 url: https://tshing17.shinyapps.io/project_2/
-when: 1571598412.29295
+when: 1572108584.00171
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: README.md|data/.Rhistory|data/UMD IRS 990.txt|data/UMD_Services_Provided_metadata_20190719.tsv
+ignoredFiles: README.md|data/UMD IRS 990.txt|data/UMD_Services_Provided_metadata_20190719.tsv

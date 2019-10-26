@@ -4,7 +4,7 @@ Project 2 link: <https://tshing17.shinyapps.io/project_2/>
 
 Urban Ministries of Durham is an organization that connects with the community to end homelessness and fight poverty.  Urban Ministries of Durham has three main programs: the Community Shelter, the Community Cafe, and the Food Pantry and Clothing Closet.
 
-Over the years, Urban Ministries of Durham has collected data on their services provided at the Community Resource Center which consists of both the Community Cafe and the Food Pantry and Clothing Closet.  This includes a record of whether food, clothing, or items were received by an individual who visited the community center.
+Over the years, Urban Ministries of Durham has collected data on their services provided at the Community Resource Center which consists of both the Community Cafe and the Food Pantry and Clothing Closet.  This includes a record of whether food, clothing, or others items were received by an individual who visited the community center.
 
 ## Project Goals
 
