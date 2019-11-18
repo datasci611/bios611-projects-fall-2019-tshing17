@@ -31,4 +31,4 @@ For study question 1-3, this analysis will focus on a client's **first** visit t
 
 For study question 4, the analysis will focus on whether a client had a second visit to the shelter or not as of 11/2/2019.  Characteristics at a client's first exit from the center will be used to predict return.
 
-Data wrangling will be performed in Python. Tables and descriptive analyses will be performed in R using the Tidyverse.  Deep learning will be performed in Python.  A Docker container will be provided to facilitate reproducibility.  Finally, the entire project will be documented using Make.
+Data wrangling will be performed in Python. Tables, descriptive analyses, and regression analyses will be performed in R using the Tidyverse.  A Docker container will be provided to facilitate reproducibility.  Finally, the entire project will be documented using Make.
