@@ -1,8 +1,8 @@
 # DEMOGRAPHICS PLOTS
 library(tidyverse)
 
-setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
-first<-read.delim('./data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
+#setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
+first<-read.delim('../data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
 
 # bar chart for Age, colored by race, split by gender 
 agebreaks <- c(18,25,35,45,55,65,500)
@@ -23,5 +23,5 @@ demog_plot=ggplot(filter(first, !is.na(Client.Gender), !is.na(Client.Primary.Rac
   labs(x='Age at First Entry', y='Number of Clients')+
   scale_fill_discrete(name = "Race", labels = c("Black", "White", "Other"))
 
-ggsave("./results/demog_plot.png", demog_plot)
+ggsave("../results/demog_plot.png", demog_plot)
 
