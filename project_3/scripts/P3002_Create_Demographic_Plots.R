@@ -20,8 +20,56 @@ demog_plot=ggplot(filter(first, !is.na(Client.Gender), !is.na(Client.Primary.Rac
        aes(x=Client.Age.at.Entry.Cat, fill=Client.Primary.Race2))+
   geom_bar(position="stack")+
   facet_wrap(~ Client.Gender)+
-  labs(x='Age at First Entry', y='Number of Clients')+
+  labs(x='Age at First Entry', y='Number of Clients', title='Client Demogrpahics at Entry')+
   scale_fill_discrete(name = "Race", labels = c("Black", "White", "Other"))
 
 ggsave("../results/demog_plot.png", demog_plot)
 
+
+# veteran status
+veteran = first %>%
+  group_by(Client.Veteran.Status) %>%
+  summarise(freq=n()) %>%
+  mutate(pct=(freq/2102)*100)
+
+veteran_plot = ggplot(data=veteran, aes(x="", y=pct, fill=Client.Veteran.Status))+
+  geom_bar(stat="identity", width=1, color="white")+
+  coord_polar("y", start=0)+
+  theme_void()+
+  geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
+  labs(title="Percent Distribution of Veteran Status at Entry")
+veteran_plot
+
+ggsave("../results/veteran_plot.png", veteran_plot)
+
+# domestic violence
+domestic_violence = first %>%
+  group_by(Domestic.violence.victim.survivor) %>%
+  summarise(freq=n()) %>%
+  mutate(pct=(freq/2102)*100)
+
+domestic_violence_plot = ggplot(data=domestic_violence, aes(x="", y=pct, fill=Domestic.violence.victim.survivor))+
+  geom_bar(stat="identity", width=1, color="white")+
+  coord_polar("y", start=0)+
+  theme_void()+
+  geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
+  labs(title="Percent Distribution of Domestic Violence Survivors at Entry")
+domestic_violence_plot
+
+ggsave("../results/domestic_violence_plot.png", domestic_violence_plot)
+
+# prior living situation
+prior_living = first %>%
+  group_by(Prior.Living) %>%
+  summarise(freq=n()) %>%
+  mutate(pct=(freq/2102)*100)
+
+prior_living_plot = ggplot(data=prior_living, aes(x="", y=pct, fill=Prior.Living))+
+  geom_bar(stat="identity", width=1, color="white")+
+  coord_polar("y", start=0)+
+  theme_void()+
+  geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
+  labs(title="Percent Distribution of Living Situation Prior to Entry")
+prior_living_plot
+
+ggsave("../results/prior_living_plot.png", prior_living_plot)
