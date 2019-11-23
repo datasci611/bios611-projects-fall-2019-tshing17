@@ -1,0 +1,34 @@
+Provide feedback about the following topics:
+
+1. Is the project organized modularly, with Make as the workflow manager?
+Yes.  The Makefile looks like it will be used to run the Python script then the R script to create the html output. 
+
+2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+Yes.  Nice job using Pandas to access data in columns and using the apply/lambda function to get the total nights.  Nice job using Tidyverse to pipe objects.  It makes your code very clean.
+
+3. Is Docker used to define execution environments appropriately?
+Yes, I think the Docker containers mentioned are appropriate.
+
+4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+Yes, the plots are all appropriate for the data types.  Because your hypothesis is stay duration, it would be useful to also add a plot on the distribution of time of stay in your exploratory analysis.
+
+5. How can the project be organized or documented more clearly?
+While everything will work if the Make and Docker files are in your scripts folder, consider moving them to the top of the file structure (the place where your README is) and putting your output in a results folder or also at the top of the file structure for a more user-friendly organization.
+
+6. Is the purpose of the project communicated clearly?
+Yes, the purpose of the project is clearly communicated in the README in the line "Our question of interest is how does length of stay at the UMD shelter (determined by the total nights spent at UMD) relate to client demographics (such as entry age, race, gender, ethnicity)?"  You could also add this to the introduction section in your report.
+
+7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+I think all of the plots and analyses are useful for the client.  For me it was helpful to see the code in the report, but the clients probably don't understand R code.  In your final report you should probably hide the code in your Rmarkdown.
+
+8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+Yes.  The link to the UMD website is very helpful.
+
+9. Is the interpretation of figures clearly explained?
+Nice start to the figures.  Adding some titles would help interpretability.  
+
+10. Is the purpose and interpretation of analysis steps clearly communicated?
+Yes, the linear regression makes sense.  One thing to think about for your final analysis is, how will you handle the doesn't know/refused/data not collected categories as well as other levels with small cell counts (ie GenderTrans)?
+
+11. Are overall take-home messages clearly communicated?
+There is an outlined section for conclusions which will make the take-home messages clear.

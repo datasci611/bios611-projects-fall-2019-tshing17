@@ -1,0 +1,33 @@
+Provide feedback about the following topics:
+
+1. Is the project organized modularly, with Make as the workflow manager?
+I like how you have separate folders for data and scripts.  You can add your Make file to the top-level of your project (where the README is).
+
+2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+Good start using Pandas access the data.  I'd suggest using relative paths to export your data so that if someone were to recreate your project the dataset you create goes to the data folder instead of your desktop.
+
+3. Is Docker used to define execution environments appropriately?
+
+
+4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+
+
+5. How can the project be organized or documented more clearly?
+Consider also adding a results folder.
+
+6. Is the purpose of the project communicated clearly?
+Yes, the purpose is given in the README.
+
+7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+Yes, I think that UMD would be very interested to know how many clients they support.  
+
+8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+Yes, the source is clear in the README.  Many people have also added a link to the UMD website in the README and projects which I think is helpful.
+
+9. Is the interpretation of figures clearly explained?
+
+
+10. Is the purpose and interpretation of analysis steps clearly communicated?
+
+
+11. Are overall take-home messages clearly communicated?
