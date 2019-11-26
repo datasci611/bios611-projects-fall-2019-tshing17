@@ -1,0 +1,7 @@
+Your project is well coded, and utilizes the required computing languages (R, Python, Make, etc.). It is a bit difficult to read your python and r code, so I would recommend adding more
+comments to your code for clarity. Additionally, you may want to consider combining your dockerfiles into 1 file, considering how short they both are (the dockerfile for tidyverse is
+only 1 line). Your Readme and report html both give a general overview of how you you believe UMD can utilize the results of your project, which is good, but I believe you should add
+give a more indepth explanation for at least some of your figures and analyses on they specifically can be used by UMD. It would also be a good idea to at the very least add a brief
+explanation to each figure as to what it is presenting at the very least if you believe it unnecessary to also add how each figure can be utilized by UMD, as mentioned previously. You may
+also want to consider labelling your variable names in your figures, rather than using the default variable names. Finally, don't forget to add to the conclusions section of your
+report, which is currently blank. If you make these changes to your project, I think that your project will be even better than it is now. Good luck!
