@@ -19,8 +19,18 @@ health_ins2 = health_ins2 %>%
 health_ins_plot = ggplot(data=health_ins2, aes(x=Type, y=Freq, fill=Category))+
   geom_col(position="stack")+
   coord_flip()+
-  labs(y='Number of Clients', x='Health Insurance Covered at Entry', title='Health Insurance Reported at Entry')+
-  scale_fill_discrete(name = "Response")
+  labs(y='Number of Clients', x='Health Insurance Covered at Entry', title='Figure 6. Health Insurance Reported at Entry')+
+  scale_fill_discrete(name = "Response")+
+  scale_x_discrete(labels=c('Employer',
+                            'COBRA',
+                            'Indian Health Services',
+                            'Medicaid',
+                            'Medicare',
+                            'Other',
+                            'Privately Paid',
+                            'State CHIP',
+                            'State Health Insurance',
+                            'VA Medical Services'))
 health_ins_plot
 
 ggsave("../results/health_ins_plot.png", health_ins_plot)

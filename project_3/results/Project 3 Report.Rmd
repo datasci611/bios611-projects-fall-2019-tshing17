@@ -6,10 +6,10 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-
 library(tidyverse)
 first<-read.delim('../data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
 ```
+
 ## Introduction
 Urban Ministries of Durham (UMD) is an organization that connects with the community to end homelessness and fight poverty.  UMD has three main programs: the Community Shelter, the Community Cafe, and the Food Pantry and Clothing Closet.  UMD has collected data from the shelter recording information on each visit to the center.  This includes data regarding clients upon entry to and exit from the shelte such as age, gender, race, mental health, income, insurance, and many other variables.
 
@@ -48,28 +48,28 @@ To address study question 4, the analysis will focus on whether a client had a s
 ### Client Characteristics
 There were `r length(first$Client.ID)` clients whose first visit to the UMD shelter occurred between `r min(as.Date(first$Entry.Date))` and `r max(as.Date(first$Entry.Date))`.  The average age of clients who visited the shelter was `r round(mean(first$Client.Age.at.Entry))` years old.  The majority of clients (`r round((length(which(first$Client.Gender=='Male'))/length(first$Client.Gender))*100)`%) were male.  Similarly, `r round((length(which(first$Client.Primary.Race=='Black or African American'))/length(first$Client.Primary.Race))*100)`% of clients were Black or African American.  Figure 1 shows the distribution of clients by age, gender and race.
 
-![Figure 1.](../results/demog_plot.png)
+![](../results/demog_plot.png){width=65%}
 
 At entry to the shelter, clients were also asked whether they were veterans, whether they had experienced domestic violence, and their living situation prior to entering the shelter.  As shown in Figures 2, `r round((length(which(first$Client.Veteran.Status=='Yes'))/length(first$Client.Veteran.Status))*100)`% of clients were veterans.  Meanwhile, `r round((length(which(first$Domestic.violence.victim.survivor=='Yes'))/length(first$Domestic.violence.victim.survivor))*100)`% of clients had experienced domestic violence as shown in Figure 3.
 
-![Figure 2.](../results/veteran_plot.png)
-![Figure 3.](../results/domestic_violence_plot.png)
+![](../results/veteran_plot.png){width=65%}
+![](../results/domestic_violence_plot.png){width=65%}
 
 As shown in Figure 4, The majority of clients came to shelter after living at a friend or family's place (`r round((length(which(first$Prior.Living=='FRIEND or FAMILY'))/length(first$Prior.Living))*100)`%) or from a not habitable place (`r round((length(which(first$Prior.Living=='NOT HABITABLE'))/length(first$Prior.Living))*100)`%).
 
-![Figure 4.](../results/prior_living_plot.png)
+![](../results/prior_living_plot.png){width=65%}
 
 At entry to the shelter, clients were also asked whether they had any disability.  Most clients did not report any disability or left the question blank.  Of those who did respond, many reported a mental health problem.  Figure 5 shows the distributions of how clients responded to the disability questions.
 
-![Figure 5.](../results/disab_plot.png)
+![Figure 5.](../results/disab_plot.png){width=65%}
 
 Health insurance information was also acquired from clients.  Most clients did not have any health insurance.  Of those who did have insurance, the majority had Medicaid.  Figure 6 shows the distributions client's health insurance.
 
-![Figure 6.](../results/health_ins_plot.png)
+![Figure 6.](../results/health_ins_plot.png){width=65%}
 
-### Shelter Length of First Stay 
+## Shelter Length of First Stay 
 
-### Return to Shelter
+## Return to Shelter
 
-## Conclusions
+# Conclusions
 

@@ -20,7 +20,7 @@ demog_plot=ggplot(filter(first, !is.na(Client.Gender), !is.na(Client.Primary.Rac
        aes(x=Client.Age.at.Entry.Cat, fill=Client.Primary.Race2))+
   geom_bar(position="stack")+
   facet_wrap(~ Client.Gender)+
-  labs(x='Age at First Entry', y='Number of Clients', title='Client Demogrpahics at Entry')+
+  labs(x='Age at First Entry', y='Number of Clients', title='Figure 1. Client Demographics at Entry')+
   scale_fill_discrete(name = "Race", labels = c("Black", "White", "Other"))
 
 ggsave("../results/demog_plot.png", demog_plot)
@@ -37,7 +37,7 @@ veteran_plot = ggplot(data=veteran, aes(x="", y=pct, fill=Client.Veteran.Status)
   coord_polar("y", start=0)+
   theme_void()+
   geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
-  labs(title="Percent Distribution of Veteran Status at Entry")
+  labs(title="Figure 2. Percent Distribution of Veteran Status at Entry", fill='Veteran Status')
 veteran_plot
 
 ggsave("../results/veteran_plot.png", veteran_plot)
@@ -53,7 +53,7 @@ domestic_violence_plot = ggplot(data=domestic_violence, aes(x="", y=pct, fill=Do
   coord_polar("y", start=0)+
   theme_void()+
   geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
-  labs(title="Percent Distribution of Domestic Violence Survivors at Entry")
+  labs(title="Figure 3. Percent Distribution of Domestic Violence Survivors at Entry", fill='Survivor')
 domestic_violence_plot
 
 ggsave("../results/domestic_violence_plot.png", domestic_violence_plot)
@@ -69,7 +69,7 @@ prior_living_plot = ggplot(data=prior_living, aes(x="", y=pct, fill=Prior.Living
   coord_polar("y", start=0)+
   theme_void()+
   geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
-  labs(title="Percent Distribution of Living Situation Prior to Entry")
+  labs(title="Figure 4. Percent Distribution of Living Situation Prior to Entry", fill='Living Situation')
 prior_living_plot
 
 ggsave("../results/prior_living_plot.png", prior_living_plot)

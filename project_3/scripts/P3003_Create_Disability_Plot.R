@@ -16,11 +16,26 @@ disab2 = disab2 %>%
   gather('Yes', 'No', 'Missing', key = "Category", value = "Freq") %>%
   arrange(Type)
 
-disab_plot = ggplot(data=disab2, aes(x=Type, y=Freq, fill=Category))+
+disab_plot = ggplot(data=disab2, aes(x=factor(Type), y=Freq, fill=Category))+
   geom_col(position="stack")+
   coord_flip()+
-  labs(y='Number of Clients', x='Disability Type at Entry', title='Disability Reported at Entry')+
-  scale_fill_discrete(name = "Response")
+  labs(y='Number of Clients', x='Disability Type at Entry', title='Figure 5. Disability Reported at Entry')+
+  scale_fill_discrete(name = "Response")+
+  scale_x_discrete(labels = c('Alcohol Abuse',
+                              'Alcohol and Drug Abuse',
+                              'Chronic Health Condition',
+                              'Developmental',
+                              'Drug Abuse',
+                              'Dual Diagnosis',
+                              'Hearing Impaired',
+                              'HIV/AIDS',
+                              'Mental Health',
+                              'Other Learning',
+                              'Other Speech',
+                              'Other',
+                              'Physical',
+                              'Physical (medical)',
+                              'Vision Impaired'))
 disab_plot
 
 ggsave("../results/disab_plot.png", disab_plot)
