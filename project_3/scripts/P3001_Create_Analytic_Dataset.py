@@ -19,7 +19,7 @@ import numpy as np
 # In[8]:
 
 
-client = pd.read_csv("../data/client_191102.tsv", delimiter='\t', encoding='utf-8')
+client = pd.read_csv("./data/CLIENT_191102.tsv", delimiter='\t', encoding='utf-8')
 client.head()
 
 
@@ -108,7 +108,7 @@ client.groupby("Client Veteran Status").size()
 # In[13]:
 
 
-entry_exit = pd.read_csv("../data/entry_exit_191102.tsv", delimiter='\t', encoding='utf-8')
+entry_exit = pd.read_csv("./data/ENTRY_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
 entry_exit.head()
 
 
@@ -157,7 +157,7 @@ entry_exit["LOS"] = entry_exit["LOS"].apply(lambda row: row.days)
 # In[20]:
 
 
-disab_entry = pd.read_csv("../data/disability_entry_191102.tsv", delimiter='\t', encoding='utf-8')
+disab_entry = pd.read_csv("./data/DISABILITY_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
 disab_entry.head()
 
 
@@ -271,7 +271,7 @@ disab_entry_t.head()
 # In[34]:
 
 
-ee_udes = pd.read_csv("../data/ee_udes_191102.tsv", delimiter='\t', encoding='utf-8')
+ee_udes = pd.read_csv("./data/EE_UDES_191102.tsv", delimiter='\t', encoding='utf-8')
 ee_udes.head()
 
 
@@ -344,7 +344,7 @@ ee_udes.head()
 # In[43]:
 
 
-health_ins_entry = pd.read_csv("../data/health_ins_entry_191102.tsv", delimiter='\t', encoding='utf-8')
+health_ins_entry = pd.read_csv("./data/HEALTH_INS_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
 health_ins_entry.head()
 
 
@@ -432,7 +432,7 @@ health_ins_entry_t.head()
 # In[54]:
 
 
-income_entry = pd.read_csv("../data/income_entry_191102.tsv", delimiter='\t', encoding='utf-8')
+income_entry = pd.read_csv("./data/INCOME_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
 income_entry.head()
 
 
@@ -527,7 +527,7 @@ income_entry_t.head()
 # In[66]:
 
 
-noncash_entry = pd.read_csv("../data/noncash_entry_191102.tsv", delimiter='\t', encoding='utf-8')
+noncash_entry = pd.read_csv("./data/NONCASH_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
 noncash_entry.head()
 
 
@@ -662,6 +662,6 @@ anl_first.head()
 # In[84]:
 
 
-anl.to_csv("../data/analytic.tsv", sep='\t')
-anl_first.to_csv("../data/analytic_first.tsv", sep='\t')
+anl.to_csv("./data/analytic.tsv", sep='\t')
+anl_first.to_csv("./data/analytic_first.tsv", sep='\t')
 

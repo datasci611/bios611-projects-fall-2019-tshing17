@@ -2,7 +2,7 @@
 library(tidyverse)
 
 #setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
-first<-read.delim('../data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
+first<-read.delim('./data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
 
 # bar chart disability 
 disab = first %>% select(EE.UID, Client.ID, Alcohol.Abuse:Any.Disability)
@@ -38,4 +38,4 @@ disab_plot = ggplot(data=disab2, aes(x=factor(Type), y=Freq, fill=Category))+
                               'Vision Impaired'))
 disab_plot
 
-ggsave("../results/disab_plot.png", disab_plot)
+ggsave("./results/disab_plot.png", disab_plot)

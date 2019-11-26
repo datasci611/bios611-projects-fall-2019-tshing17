@@ -2,7 +2,7 @@
 library(tidyverse)
 
 #setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
-first<-read.delim('../data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
+first<-read.delim('./data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
 
 # bar chart noncash sources
 noncash = first %>% select(EE.UID, Client.ID, Other.Source:Any.Noncash.Source)
@@ -23,4 +23,4 @@ noncash_plot = ggplot(data=noncash2, aes(x=Type, y=Freq, fill=Category))+
   scale_fill_discrete(name = "Response")
 noncash_plot
 
-ggsave("../results/noncash_plot.png", noncash_plot)
+ggsave("./results/noncash_plot.png", noncash_plot)

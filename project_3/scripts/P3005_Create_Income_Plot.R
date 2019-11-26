@@ -2,7 +2,7 @@
 library(tidyverse)
 
 #setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
-first<-read.delim('../data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
+first<-read.delim('./data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
 
 # bar chart income sources
 income = first %>% select(EE.UID, Client.ID, Alimony.or.Other.Spousal.Support:Any.Income.Source)
@@ -23,4 +23,4 @@ income_plot = ggplot(data=income2, aes(x=Type, y=Freq, fill=Category))+
   scale_fill_discrete(name = "Response")
 income_plot
 
-ggsave("../results/income_plot.png", income_plot)
+ggsave("./results/income_plot.png", income_plot)

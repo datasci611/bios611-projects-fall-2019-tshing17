@@ -2,7 +2,7 @@
 library(tidyverse)
 
 #setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
-first<-read.delim('../data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
+first<-read.delim('./data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
 
 # bar chart health insurance 
 health_ins = first %>% select(EE.UID, Client.ID, Employer...Provided.Health.Insurance:Any.Health.Insurance)
@@ -33,4 +33,4 @@ health_ins_plot = ggplot(data=health_ins2, aes(x=Type, y=Freq, fill=Category))+
                             'VA Medical Services'))
 health_ins_plot
 
-ggsave("../results/health_ins_plot.png", health_ins_plot)
+ggsave("./results/health_ins_plot.png", health_ins_plot)

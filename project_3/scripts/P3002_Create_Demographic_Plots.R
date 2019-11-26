@@ -2,7 +2,7 @@
 library(tidyverse)
 
 #setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
-first<-read.delim('../data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
+first<-read.delim('./data/analytic_first.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
 
 # bar chart for Age, colored by race, split by gender 
 agebreaks <- c(18,25,35,45,55,65,500)
@@ -23,7 +23,7 @@ demog_plot=ggplot(filter(first, !is.na(Client.Gender), !is.na(Client.Primary.Rac
   labs(x='Age at First Entry', y='Number of Clients', title='Figure 1. Client Demographics at Entry')+
   scale_fill_discrete(name = "Race", labels = c("Black", "White", "Other"))
 
-ggsave("../results/demog_plot.png", demog_plot)
+ggsave("./results/demog_plot.png", demog_plot)
 
 
 # veteran status
@@ -40,7 +40,7 @@ veteran_plot = ggplot(data=veteran, aes(x="", y=pct, fill=Client.Veteran.Status)
   labs(title="Figure 2. Percent Distribution of Veteran Status at Entry", fill='Veteran Status')
 veteran_plot
 
-ggsave("../results/veteran_plot.png", veteran_plot)
+ggsave("./results/veteran_plot.png", veteran_plot)
 
 # domestic violence
 domestic_violence = first %>%
@@ -56,7 +56,7 @@ domestic_violence_plot = ggplot(data=domestic_violence, aes(x="", y=pct, fill=Do
   labs(title="Figure 3. Percent Distribution of Domestic Violence Survivors at Entry", fill='Survivor')
 domestic_violence_plot
 
-ggsave("../results/domestic_violence_plot.png", domestic_violence_plot)
+ggsave("./results/domestic_violence_plot.png", domestic_violence_plot)
 
 # prior living situation
 prior_living = first %>%
@@ -72,4 +72,4 @@ prior_living_plot = ggplot(data=prior_living, aes(x="", y=pct, fill=Prior.Living
   labs(title="Figure 4. Percent Distribution of Living Situation Prior to Entry", fill='Living Situation')
 prior_living_plot
 
-ggsave("../results/prior_living_plot.png", prior_living_plot)
+ggsave("./results/prior_living_plot.png", prior_living_plot)
