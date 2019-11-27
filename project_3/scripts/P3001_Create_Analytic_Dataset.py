@@ -1,77 +1,117 @@
 
 # coding: utf-8
 
-# # 3001_Create Analytic Dataset
+# # P3001_Create Analytic Dataset
 # 
 # This notebook is for data wrangling of the Urban Ministries of Durham (UMD) homeless shelter data.
 
 # ## Import Data
 
-# In[3]:
+# In[29]:
 
 
-import pandas as pd
-import numpy as np
+import pandas as pd                   ## for data wrangling
+import numpy as np                    ## for datetime
+from functools import reduce          ## for removing duplicate data
 
 
-# ### CLIENT_191102.tsv
-
-# In[8]:
+# In[30]:
 
 
-client = pd.read_csv("./data/CLIENT_191102.tsv", delimiter='\t', encoding='utf-8')
-client.head()
+# import client data
+client = pd.read_csv("../data/CLIENT_191102.tsv", delimiter='\t', encoding='utf-8')
+entry_exit = pd.read_csv("../data/ENTRY_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+ee_udes = pd.read_csv("../data/EE_UDES_191102.tsv", delimiter='\t', encoding='utf-8')
+
+#import data from entry
+disab_entry = pd.read_csv("../data/DISABILITY_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
+health_ins_entry = pd.read_csv("../data/HEALTH_INS_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
+income_entry = pd.read_csv("../data/INCOME_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
+noncash_entry = pd.read_csv("../data/NONCASH_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
+
+#import data from exit
+disab_exit = pd.read_csv("../data/DISABILITY_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+health_ins_exit = pd.read_csv("../data/HEALTH_INS_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+income_exit = pd.read_csv("../data/INCOME_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+noncash_exit = pd.read_csv("../data/NONCASH_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
 
 
-# In[3]:
+# ## Data Cleaning
+
+# ### General cleaning (for all datasets)
+
+# I will limit the analyses to records with EE Provider ID=Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838) because the other areas have been closed.
+
+# In[31]:
 
 
-client.groupby("Client ID").size().max()
+subset_to_open = 'Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838)'
+
+# client data
+client = client.loc[client['EE Provider ID'] == subset_to_open]
+entry_exit = entry_exit.loc[entry_exit['EE Provider ID'] == subset_to_open]
+ee_udes = ee_udes.loc[ee_udes['EE Provider ID'] == subset_to_open]
+
+# data at entry
+disab_entry = disab_entry.loc[disab_entry['EE Provider ID'] == subset_to_open]
+health_ins_entry = health_ins_entry.loc[health_ins_entry['EE Provider ID'] == subset_to_open]
+income_entry = income_entry.loc[income_entry['EE Provider ID'] == subset_to_open]
+noncash_entry = noncash_entry.loc[noncash_entry['EE Provider ID'] == subset_to_open]
+
+# data at exit
+disab_exit = disab_exit.loc[disab_exit['EE Provider ID'] == subset_to_open]
+health_ins_exit = health_ins_exit.loc[health_ins_exit['EE Provider ID'] == subset_to_open]
+income_exit = income_exit.loc[income_exit['EE Provider ID'] == subset_to_open]
+
+# noncash at exit has EE Provider instead of EE Provider ID
+noncash_exit = noncash_exit.loc[noncash_exit['EE Provider'] == subset_to_open]
 
 
-# There are multiple records per Client ID in this file with a maximum number of records of 37.
+# I will only going to use "Client ID" as the unique identifier in this dataset.  Therefore I will drop "Client Unique ID". "EE Provider ID" should all be the same now so I will also drop this column.
 
-# In[4]:
-
-
-client_records=client.groupby("Client ID").size().reset_index(name='Size')
-client_records[client_records.Size==37]
+# In[32]:
 
 
-# In[5]:
+drop_columns=['Client Unique ID', 'EE Provider ID']
+# client data
+client = client.drop(drop_columns, 1)
+entry_exit = entry_exit.drop(drop_columns, 1)
+ee_udes = ee_udes.drop(drop_columns, 1)
+
+# data at entry
+disab_entry = disab_entry.drop(drop_columns, 1)
+health_ins_entry = health_ins_entry.drop(drop_columns, 1)
+income_entry = income_entry.drop(drop_columns, 1)
+noncash_entry = noncash_entry.drop(drop_columns, 1)
+
+# data at exit
+disab_exit = disab_exit.drop(drop_columns, 1)
+health_ins_exit = health_ins_exit.drop(drop_columns, 1)
+income_exit = income_exit.drop(drop_columns, 1)
+
+# noncash at exit has EE Provider instead of EE Provider ID
+noncash_exit = noncash_exit.drop(['Client Unique ID', 'EE Provider'],1)
 
 
-client.groupby("EE Provider ID").size()
+# ### Cleaning client data
+
+# In the CLIENT file, are some demographic variables of interest.  For these variables, I will convert "Doesn't know", "Refused", and "Data not collected" to missing.
+
+# In[33]:
 
 
-# I will limit the analyses to records with EE Provider ID=Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838) because I don't know what the other things are.
-
-# In[6]:
-
-
-client=client[client["EE Provider ID"]=='Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838)']
-client.groupby("EE Provider ID").size()
-
-
-# Also not really sure what the difference between "Client Unique ID" and "Client ID" so I'm only going to use "Client ID". So I'm going to drop "Client Unique ID" and "EE Provider ID" since it should all be records from the Urban Ministries of Durham - Singles Emergency Shelter and nothing with xxxClosed.
-
-# In[7]:
-
-
-client = client.drop(['Client Unique ID', 'EE Provider ID'],1)
-client.head()
-
-
-# In[8]:
-
-
-client.groupby("Client Gender").size()
+# Remove the "(HUD)" from this response and convert don't know to missing
+client['Client Primary Race']=client['Client Primary Race'].str.rstrip(" (HUD)").    replace("Client doesn't know", np.NaN).    replace("Client refused", np.NaN).    replace("Data not collected", np.NaN)
 client.groupby("Client Primary Race").size()
+
+client['Client Ethnicity']=client['Client Ethnicity'].str.rstrip(" (HUD)").    replace("Client doesn't know", np.NaN).    replace("Client refused", np.NaN).    replace("Data not collected", np.NaN)
 client.groupby("Client Ethnicity").size()
+
+client['Client Veteran Status']=client['Client Veteran Status'].str.rstrip(" (HUD)").    replace("Data not collected", np.NaN)
 client.groupby("Client Veteran Status").size()
 
 
-# In[9]:
+# In[34]:
 
 
 ## change Trans Female (MTF or Male to Female) to missing for identifiable purposes
@@ -79,181 +119,125 @@ client['Client Gender'] = client['Client Gender'].replace('Trans Female (MTF or 
 client.groupby("Client Gender").size()
 
 
-# In[10]:
+# In[35]:
 
 
-# Remove the "(HUD)" from this response, convert don't know to missing
-client['Client Primary Race']=client['Client Primary Race'].str.rstrip(" (HUD)").replace("Client doesn't know", np.NaN).replace("Client refused", np.NaN).replace("Data not collected", np.NaN)
-client.groupby("Client Primary Race").size()
+client.head()
 
 
-# In[11]:
+# ### Clean entry exit data
+
+# Of interest in this data is the length of stay at the homeless shelter.  This new variables will be calculated.
+
+# In[36]:
 
 
-# Remove the "(HUD)" from this response, convert don't know to missing
-client['Client Ethnicity']=client['Client Ethnicity'].str.rstrip(" (HUD)").replace("Client doesn't know", np.NaN).replace("Client refused", np.NaN).replace("Data not collected", np.NaN)
-client.groupby("Client Ethnicity").size()
-
-
-# In[12]:
-
-
-# Remove the "(HUD)" from this response, convert don't know to missing
-client['Client Veteran Status']=client['Client Veteran Status'].str.rstrip(" (HUD)").replace("Data not collected", np.NaN)
-client.groupby("Client Veteran Status").size()
-
-
-# ### ENTRY_EXIT_191102.tsv
-
-# In[13]:
-
-
-entry_exit = pd.read_csv("./data/ENTRY_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
-entry_exit.head()
-
-
-# In[14]:
-
-
-entry_exit.groupby("EE Provider ID").size()
-
-
-# In[15]:
-
-
-entry_exit=entry_exit[entry_exit["EE Provider ID"]=='Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838)']
-entry_exit.groupby("EE Provider ID").size()
-
-
-# In[16]:
-
-
+# select variables of interest
 entry_exit = entry_exit[['EE UID', 'Entry Date', 'Exit Date', 'Destination']]
-entry_exit.head()
 
-
-# In[17]:
-
-
+# convert columns to datetime
 entry_exit[['Entry Date', 'Exit Date']] = entry_exit[['Entry Date', 'Exit Date']].apply(pd.to_datetime)
-entry_exit.head()
 
-
-# In[18]:
-
-
+# calculate date
 entry_exit['LOS']=entry_exit['Exit Date'] - entry_exit['Entry Date']
-entry_exit.head()
 
-
-# In[19]:
-
-
+# convert length of stay to days
 entry_exit["LOS"] = entry_exit["LOS"].apply(lambda row: row.days)
 
 
-# ### DISABILITY_ENTRY_191102.tsv
-
-# In[20]:
+# In[37]:
 
 
-disab_entry = pd.read_csv("./data/DISABILITY_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
-disab_entry.head()
+entry_exit.head()
 
 
-# In[21]:
+# ### Clean Entry Exit UDES data
+
+# This data table contains prior living situation and domestic violence.  There are over 20 different prior living situations.  Therefore I will re-categorize some of these livings situations to a smaller number of categories.  I will also remove "(HUD)" from the domestic violence response variable and change "don't know" and "refused" to missing.
+
+# In[38]:
 
 
-disab_entry.groupby("EE Provider ID").size()
+# reclassify prior living
+ee_udes['temp prior living']=ee_udes['Prior Living Situation(43)'].fillna("0")
+ee_udes['Prior Living'] = pd.np.where(ee_udes['temp prior living'].str.contains("doesn't know|0|refused|not collected", case=False),"UNKNOWN",
+                                      pd.np.where(ee_udes['temp prior living'].str.contains("hospital|nursing|treatment", case=False), "HOSPITAL",
+                                                  pd.np.where(ee_udes['temp prior living'].str.contains("rental", case=False), "RENTAL",
+                                                              pd.np.where(ee_udes['temp prior living'].str.contains("friend|family", case=False), "FRIEND or FAMILY",
+                                                                          pd.np.where(ee_udes['temp prior living'].str.contains("jail", case=False), "PRISON",
+                                                                                      pd.np.where(ee_udes['temp prior living'].str.contains("owned|permanent", case=False), "PERMANENT",
+                                                                                                  pd.np.where(ee_udes['temp prior living'].str.contains("habitation", case=False), "NOT HABITABLE", 
+                                                                                                              pd.np.where(ee_udes['temp prior living'].str.contains("transition|halfway|safe|interim|foster", case=False), "INTERIM",
+                                                                                                                          pd.np.where(ee_udes['temp prior living'].str.contains("Host Home shelter"), "SHELTER","OTHER")))))))))
+ee_udes.groupby("Prior Living").size()
 
 
-# In[22]:
+# In[39]:
 
 
-disab_entry = disab_entry[disab_entry["EE Provider ID"]=='Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838)']
-disab_entry.groupby("EE Provider ID").size()
+# Remove the "(HUD)" from this domestic violence victim/survivor variable and combine "Client doesn't know" and "Data not collected" into "Unknown"
+dv_deter_map = {"Client doesn't know (HUD)":'Unk', "Client refused (HUD)":'Unk', "No (HUD)":"No", "Yes (HUD)":"Yes"}
+ee_udes['Domestic violence victim/survivor'] = ee_udes['Domestic violence victim/survivor(341)'].map(dv_deter_map)
+ee_udes['Domestic violence victim/survivor'] = ee_udes['Domestic violence victim/survivor'].replace('Unk', np.NaN)
+ee_udes.groupby('Domestic violence victim/survivor').size()
 
 
-# In[23]:
+# In[40]:
 
 
-disab_entry = disab_entry[['EE UID', 'Client ID', 'Disability Determination (Entry)', 'Disability Type (Entry)', 'Date Added (417-date_added)']]
-disab_entry.head()
+# select columns of interest from ee udes
+ee_udes= ee_udes[['EE UID', 'Prior Living', 'Domestic violence victim/survivor']]
+ee_udes.head()
 
 
-# In[24]:
+# ### Clean disability data
+
+# For the disability data, there appears to be a set number of questions asked of each client regarding a series of disabilities.  I will remove the extra '(HUD)' from the disabillity determination values and change values of 'Doesn't know' or 'Data not collected' to missing. I will also remove the extra '(HUD)' from the disabillity type.  Finally, I will transform this data from long to wide. 
+
+# In[41]:
 
 
-disab_entry.groupby("Disability Determination (Entry)").size()
+# select variables of interest
+disab_entry = disab_entry[['EE UID', 'Client ID', 'Disability Determination (Entry)',                           'Disability Type (Entry)', 'Date Added (417-date_added)']]
 
-
-# In[25]:
-
-
-# Remove the "(HUD)" from this response and combine "Client doesn't know" and "Data not collected" into "Unknown"
-disab_deter_map = {"Client doesn't know (HUD)":'Unk', "Data not collected (HUD)":'Unk', "No (HUD)":"No", "Yes (HUD)":"Yes"}
+# Remove the "(HUD)" from disability determination response
+# combine "Client doesn't know" and "Data not collected" into "Unknown"
+disab_deter_map = {"Client doesn't know (HUD)":'Unknown', "Data not collected (HUD)":'Unknown',                    "No (HUD)":"No", "Yes (HUD)":"Yes"}
 disab_entry['Disab Determination'] = disab_entry['Disability Determination (Entry)'].map(disab_deter_map)
 
-# change data not collected to NaN
-disab_entry['Disab Determination'] = disab_entry["Disab Determination"].replace('Unk', np.NaN)
-disab_entry.groupby("Disab Determination").size()
+# change disability determination data not collected to NaN
+disab_entry['Disab Determination'] = disab_entry["Disab Determination"].replace('Unknown', np.NaN)
 
-
-# In[26]:
-
-
-disab_entry.groupby("Disability Type (Entry)").size()
-
-
-# In[27]:
-
-
-# Remove the "(HUD)" from this response
+# Remove the "(HUD)" from disability type
 disab_entry['Disability Type']=disab_entry['Disability Type (Entry)'].str.rstrip(" (HUD)")
-disab_entry.groupby("Disability Type").size()
 
-
-# In[28]:
-
-
-# Drop old variables.
+# Drop old variables 
 disab_entry=disab_entry.drop(['Disability Determination (Entry)', 'Disability Type (Entry)'], axis=1)
 disab_entry.head()
 
 
-# In[29]:
+# In order to transform the data, I will remove duplicate records.  That is, for records with the same entry date to the shelter, identified with a unique EE UID, I will only keep the most up to date record ie the latest Date Added, because those records look like they were updated.
+
+# In[42]:
 
 
-# sorting by first name 
+# sorting by unique shelter visit id, client id, disability type, and date added (if any updates)
 disab_entry.sort_values(by=['EE UID', 'Client ID', 'Disability Type', 'Date Added (417-date_added)'], inplace=True)
-disab_entry.head()
-
-
-# In[30]:
-
 
 # dropping duplicate values - we will only keep the last dated record because this looks to me like it was an "update"
 disab_entry.drop_duplicates(subset=['EE UID', 'Client ID', 'Disability Type'], keep='first',inplace=True)
-disab_entry.head()
 
-
-# In[31]:
-
-
-# drop date
+# drop date variable because it's no longer needed
 disab_entry=disab_entry.drop(['Date Added (417-date_added)'], axis=1)
-disab_entry.head()
-
-
-# In[32]:
-
 
 #Transform data so 1 column for each disability type and disab determination as the values.
 disab_entry_t = disab_entry.pivot(index='EE UID', columns='Disability Type', values='Disab Determination')
 disab_entry_t.head()
 
 
-# In[33]:
+# Finally, I will create a variable that indicates if there were ANY disability.
+
+# In[43]:
 
 
 disab_entry_t['Any Disability']="No"
@@ -266,155 +250,36 @@ for index in disab_entry_t.index:
 disab_entry_t.head()
 
 
-# ### EE_UDES_191102.tsv 
+# ### Clean health insurance data
 
-# In[34]:
-
-
-ee_udes = pd.read_csv("./data/EE_UDES_191102.tsv", delimiter='\t', encoding='utf-8')
-ee_udes.head()
-
-
-# In[35]:
-
-
-ee_udes = ee_udes[ee_udes["EE Provider ID"]=='Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838)']
-ee_udes.groupby("EE Provider ID").size()
-
-
-# In[36]:
-
-
-ee_udes.groupby("Prior Living Situation(43)").size()
-
-
-# In[37]:
-
-
-ee_udes['temp prior living']=ee_udes['Prior Living Situation(43)'].fillna("0")
-ee_udes['Prior Living'] = pd.np.where(ee_udes['temp prior living'].str.contains("doesn't know|0|refused|not collected", case=False),"UNK",
-                                      pd.np.where(ee_udes['temp prior living'].str.contains("hospital|nursing|treatment", case=False), "HOSPITAL",
-                                                  pd.np.where(ee_udes['temp prior living'].str.contains("rental", case=False), "RENTAL",
-                                                              pd.np.where(ee_udes['temp prior living'].str.contains("friend|family", case=False), "FRIEND or FAMILY",
-                                                                          pd.np.where(ee_udes['temp prior living'].str.contains("jail", case=False), "PRISON",
-                                                                                      pd.np.where(ee_udes['temp prior living'].str.contains("owned|permanent", case=False), "PERMANENT",
-                                                                                                  pd.np.where(ee_udes['temp prior living'].str.contains("habitation", case=False), "NOT HABITABLE", 
-                                                                                                              pd.np.where(ee_udes['temp prior living'].str.contains("transition|halfway|safe|interim|foster", case=False), "INTERIM",
-                                                                                                                          pd.np.where(ee_udes['temp prior living'].str.contains("Host Home shelter"), "SHELTER","OTHER")))))))))
-
-
-# In[38]:
-
-
-ee_udes.groupby("Prior Living").size()
-
-
-# In[39]:
-
-
-list(ee_udes.columns.values)
-
-
-# In[40]:
-
-
-ee_udes.groupby('Domestic violence victim/survivor(341)').size()
-
-
-# In[41]:
-
-
-# Remove the "(HUD)" from this response and combine "Client doesn't know" and "Data not collected" into "Unknown"
-dv_deter_map = {"Client doesn't know (HUD)":'Unk', "Client refused (HUD)":'Unk', "No (HUD)":"No", "Yes (HUD)":"Yes"}
-ee_udes['Domestic violence victim/survivor'] = ee_udes['Domestic violence victim/survivor(341)'].map(dv_deter_map)
-ee_udes['Domestic violence victim/survivor'] = ee_udes['Domestic violence victim/survivor'].replace('Unk', np.NaN)
-ee_udes.groupby('Domestic violence victim/survivor').size()
-
-
-# In[42]:
-
-
-# select columns of interest
-ee_udes= ee_udes[['EE UID', 'Prior Living', 'Domestic violence victim/survivor']]
-ee_udes.head()
-
-
-# ### HEALTH_INS_ENTRY_191102.tsv
-
-# In[43]:
-
-
-health_ins_entry = pd.read_csv("./data/HEALTH_INS_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
-health_ins_entry.head()
-
+# For the health insurance data, there appears to be a set number of questions asked of each client regarding a series of health insurances, like the disability data.  I will first change values of 'Doesn't know' or 'Data not collected' to missing. I will transform this data from long to wide. 
 
 # In[44]:
 
 
-health_ins_entry = health_ins_entry[health_ins_entry["EE Provider ID"]=='Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838)']
-health_ins_entry.groupby("EE Provider ID").size()
-
-
-# In[45]:
-
-
-health_ins_entry.groupby("Health Insurance Type (Entry)").size()
-
-
-# In[46]:
-
-
-health_ins_entry.groupby("Covered (Entry)").size()
-
-
-# In[47]:
-
-
 # change data not collected to NaN
 health_ins_entry['Covered'] = health_ins_entry["Covered (Entry)"].replace('Data Not Collected', np.NaN)
-health_ins_entry.groupby("Covered").size()
 
-
-# In[48]:
-
-
-# sorting 
-health_ins_entry.sort_values(by=['EE UID', 'Client ID', 'Health Insurance Type (Entry)', 'Date Added (4307-date_added)'], inplace=True)
-health_ins_entry
-
-
-# In[49]:
-
+# sorting by unique shelter visit id, client id, disability type, and date added (if any updates)
+health_ins_entry.sort_values(by=['EE UID', 'Client ID', 'Health Insurance Type (Entry)',                                  'Date Added (4307-date_added)'], inplace=True)
 
 # dropping duplicate values - we will only keep the last dated record because this looks to me like it was an "update"
 health_ins_entry.drop_duplicates(subset=['EE UID', 'Client ID', 'Health Insurance Type (Entry)'], keep='first',inplace=True)
-health_ins_entry
 
-
-# In[50]:
-
-
-# keep variables of interest
+# select variables of interest
 health_ins_entry=health_ins_entry[['EE UID', 'Covered', 'Health Insurance Type (Entry)']]
-health_ins_entry.head()
-
-
-# In[51]:
-
 
 # delete entries where health insurance type is NAN - all of these have covered values = nan too
 health_ins_entry=health_ins_entry.dropna(subset=['Health Insurance Type (Entry)'])
-
-
-# In[52]:
-
 
 #Transform data so 1 column for each insurance type and covered entry as the values.
 health_ins_entry_t = health_ins_entry.pivot(index='EE UID', columns='Health Insurance Type (Entry)', values='Covered')
 health_ins_entry_t.head()
 
 
-# In[53]:
+# Finally, I will create a variable that indicates if there were ANY health insurance.
+
+# In[45]:
 
 
 health_ins_entry_t['Any Health Insurance']="No"
@@ -427,89 +292,39 @@ for index in health_ins_entry_t.index:
 health_ins_entry_t.head()
 
 
-# ### INCOME_ENTRY_191102.tsv
+# ### Clean income data
 
-# In[54]:
+# For the income data, there appears to be a set number of questions asked of each client regarding any income.  I will first change values of 'Doesn't know' or 'Data not collected' to missing. Then I will transform this data from long to wide. 
 
-
-income_entry = pd.read_csv("./data/INCOME_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
-income_entry.head()
-
-
-# In[55]:
-
-
-income_entry = income_entry[income_entry["EE Provider ID"]=='Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838)']
-income_entry.groupby("EE Provider ID").size()
-
-
-# In[56]:
-
-
-income_entry.groupby("Income Source (Entry)").size()
-
-
-# In[57]:
+# In[46]:
 
 
 # Remove the "(HUD)" from this response
 income_entry['Income Source']=income_entry['Income Source (Entry)'].str.rstrip(" (HUD)")
-income_entry.groupby('Income Source').size()
-
-
-# In[58]:
-
-
-income_entry.groupby('Receiving Income (Entry)').size()
-
-
-# In[59]:
-
 
 # change data not collected to NaN
 income_entry['Receiving Income'] = income_entry["Receiving Income (Entry)"].replace('Data Not Collected', np.NaN)
-income_entry.groupby("Receiving Income").size()
 
-
-# In[60]:
-
-
-# sorting 
+# sorting by unique shelter visit id, client id, disability type, and date added (if any updates)
 income_entry.sort_values(by=['EE UID', 'Client ID', 'Income Source', 'Date Added (140-date_added)'], inplace=True)
-income_entry
-
-
-# In[61]:
-
 
 # dropping duplicate values - we will only keep the last dated record because this looks to me like it was an "update"
 income_entry.drop_duplicates(subset=['EE UID', 'Client ID', 'Income Source'], keep='first',inplace=True)
-income_entry
-
-
-# In[62]:
-
 
 # keep variables of interest
 income_entry=income_entry[['EE UID', 'Receiving Income', 'Income Source']]
-income_entry.head()
 
-
-# In[63]:
-
-
+# delete entries where income type is NAN - all of these have covered values = nan too
 income_entry=income_entry.dropna(subset=['Income Source'])
-
-
-# In[64]:
-
 
 #Transform data so 1 column for each insurance type and covered entry as the values.
 income_entry_t = income_entry.pivot(index='EE UID', columns='Income Source', values='Receiving Income')
 income_entry_t.head()
 
 
-# In[65]:
+# Finally, I will create a variable that indicates if there were ANY income.
+
+# In[47]:
 
 
 income_entry_t['Any Income Source']="No"
@@ -522,89 +337,39 @@ for index in income_entry_t.index:
 income_entry_t.head()
 
 
-# ### NONCASH_ENTRY_191102.tsv
+# ### Clean Noncash data
 
-# In[66]:
+# For the noncash income data, there appears to be a set number of questions asked of each client regarding any noncash income.  I will first change values of 'Doesn't know' or 'Data not collected' to missing. Then I will transform this data from long to wide. 
 
-
-noncash_entry = pd.read_csv("./data/NONCASH_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
-noncash_entry.head()
-
-
-# In[67]:
-
-
-noncash_entry = noncash_entry[noncash_entry["EE Provider ID"]=='Urban Ministries of Durham - Durham County - Singles Emergency Shelter - Private(5838)']
-noncash_entry.groupby("EE Provider ID").size()
-
-
-# In[68]:
-
-
-noncash_entry.groupby("Non-Cash Source (Entry)").size()
-
-
-# In[69]:
+# In[48]:
 
 
 # Remove the "(HUD)" from this response
 noncash_entry['Noncash Source']=noncash_entry['Non-Cash Source (Entry)'].str.rstrip(" (HUD)")
-noncash_entry.groupby('Noncash Source').size()
-
-
-# In[70]:
-
-
-noncash_entry.groupby("Receiving Benefit (Entry)").size()
-
-
-# In[71]:
-
 
 # change data not collected to NaN
 noncash_entry['Receiving Benefit'] = noncash_entry["Receiving Benefit (Entry)"].replace('Data Not Collected', np.NaN)
-noncash_entry.groupby("Receiving Benefit").size()
 
-
-# In[72]:
-
-
-# sorting 
+# sorting by unique shelter visit id, client id, disability type, and date added (if any updates)
 noncash_entry.sort_values(by=['EE UID', 'Client ID', 'Noncash Source', 'Date Added (2704-date_added)'], inplace=True)
-noncash_entry
-
-
-# In[73]:
-
 
 # dropping duplicate values - we will only keep the last dated record because this looks to me like it was an "update"
 noncash_entry.drop_duplicates(subset=['EE UID', 'Client ID', 'Noncash Source'], keep='first',inplace=True)
-noncash_entry
-
-
-# In[74]:
-
 
 # keep variables of interest
 noncash_entry=noncash_entry[['EE UID', 'Receiving Benefit', 'Noncash Source']]
-noncash_entry.head()
 
-
-# In[75]:
-
-
+# delete entries where income type is NAN - all of these have covered values = nan too
 noncash_entry=noncash_entry.dropna(subset=['Noncash Source'])
-
-
-# In[76]:
-
 
 #Transform data so 1 column for each insurance type and covered entry as the values.
 noncash_entry_t = noncash_entry.pivot(index='EE UID', columns='Noncash Source', values='Receiving Benefit')
 noncash_entry_t.head()
 
 
-# In[77]:
+# Finally, I will create a variable that indicates if there were ANY noncash income.
+
+# In[49]:
 
 
 noncash_entry_t['Any Noncash Source']="No"
@@ -617,51 +382,22 @@ for index in noncash_entry_t.index:
 noncash_entry_t.head()
 
 
-# ## Merge to create analytic dataset
+# ## Merge all data to create analytic dataset
 
-# In[78]:
-
-
-from functools import reduce
+# In[50]:
 
 
-# In[79]:
-
-
+# merge all data frames together to create an analytic dataset with 1 record per EE UID
 data_frames = [client, entry_exit, ee_udes, disab_entry_t, health_ins_entry_t, income_entry_t, noncash_entry_t]
 anl = reduce(lambda  left,right: pd.merge(left,right,on=['EE UID'], how='left'), data_frames)
 
-
-# In[80]:
-
-
-anl.head()
-
-
-# In[81]:
-
-
-for col in anl.columns: 
-    print(col)
-
-
-# In[82]:
-
-
+# sort values by client id and entry date
 anl.sort_values(by=['Client ID', 'Entry Date'], inplace=True)
 
-
-# In[83]:
-
-
-# output first record only
+# output first record only to get the FIRST entry of shelter use for a client
 anl_first = anl.drop_duplicates(subset='Client ID', keep='first')
-anl_first.head()
 
-
-# In[84]:
-
-
-anl.to_csv("./data/analytic.tsv", sep='\t')
-anl_first.to_csv("./data/analytic_first.tsv", sep='\t')
+# output data to tsv files for data analysis in R
+anl.to_csv("../data/analytic.tsv", sep='\t')
+anl_first.to_csv("../data/analytic_first.tsv", sep='\t')
 
