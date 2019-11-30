@@ -2,7 +2,7 @@
 library(tidyverse)
 
 # read in data from first visit 
-setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
+#setwd("C:/Users/tshin/Documents/GitHub/bios611-projects-fall-2019-tshing17/project_3/")
 first_entry<-read.delim('./data/analytic_first_entry.tsv', sep="\t", header=TRUE, na.strings = c("", "NA"))
 
 # bar chart for distribution of age, colored by race, split by gender 
@@ -24,7 +24,7 @@ demog_plot=ggplot(filter(first_entry, !is.na(Client.Gender), !is.na(Client.Prima
        aes(x = Client.Age.at.Entry.Cat, fill = Client.Primary.Race2))+
   geom_bar(position="stack")+
   facet_wrap(~ Client.Gender)+
-  labs(x = 'Age at first_entry Entry', y = 'Number of Clients', title = 'Figure 1. Client Demographics at Entry')+
+  labs(x = 'Age at First Entry', y = 'Number of Clients', title = 'Figure 1. Client Demographics at Entry')+
   scale_fill_discrete(name = "Race", labels = c("Black", "White", "Other"))+
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.title = element_text(hjust = -.8, vjust=2.12, size=12))

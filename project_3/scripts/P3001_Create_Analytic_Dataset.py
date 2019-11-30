@@ -19,21 +19,21 @@ from functools import reduce          ## for removing duplicate data
 
 
 # import client data
-client = pd.read_csv("../data/CLIENT_191102.tsv", delimiter='\t', encoding='utf-8')
-entry_exit = pd.read_csv("../data/ENTRY_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
-ee_udes = pd.read_csv("../data/EE_UDES_191102.tsv", delimiter='\t', encoding='utf-8')
+client = pd.read_csv("./data/CLIENT_191102.tsv", delimiter='\t', encoding='utf-8')
+entry_exit = pd.read_csv("./data/ENTRY_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+ee_udes = pd.read_csv("./data/EE_UDES_191102.tsv", delimiter='\t', encoding='utf-8')
 
 #import data from entry
-disab_entry = pd.read_csv("../data/DISABILITY_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
-health_ins_entry = pd.read_csv("../data/HEALTH_INS_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
-income_entry = pd.read_csv("../data/INCOME_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
-noncash_entry = pd.read_csv("../data/NONCASH_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
+disab_entry = pd.read_csv("./data/DISABILITY_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
+health_ins_entry = pd.read_csv("./data/HEALTH_INS_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
+income_entry = pd.read_csv("./data/INCOME_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
+noncash_entry = pd.read_csv("./data/NONCASH_ENTRY_191102.tsv", delimiter='\t', encoding='utf-8')
 
 #import data from exit
-disab_exit = pd.read_csv("../data/DISABILITY_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
-health_ins_exit = pd.read_csv("../data/HEALTH_INS_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
-income_exit = pd.read_csv("../data/INCOME_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
-noncash_exit = pd.read_csv("../data/NONCASH_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+disab_exit = pd.read_csv("./data/DISABILITY_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+health_ins_exit = pd.read_csv("./data/HEALTH_INS_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+income_exit = pd.read_csv("./data/INCOME_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
+noncash_exit = pd.read_csv("./data/NONCASH_EXIT_191102.tsv", delimiter='\t', encoding='utf-8')
 
 
 # ## Data Cleaning
@@ -585,8 +585,8 @@ anl_entry.sort_values(by=['Client ID', 'Entry Date'], inplace=True)
 anl_first_entry = anl_entry.drop_duplicates(subset='Client ID', keep='first')
 
 # output data to tsv files for data analysis in R
-anl_entry.to_csv("../data/analytic_entry.tsv", sep='\t')
-anl_first_entry.to_csv("../data/analytic_first_entry.tsv", sep='\t')
+anl_entry.to_csv("./data/analytic_entry.tsv", sep='\t')
+anl_first_entry.to_csv("./data/analytic_first_entry.tsv", sep='\t')
 
 
 # ### At exit
@@ -626,6 +626,6 @@ anl_first_exit2 = pd.merge(anl_first_exit, num_visit, on=['Client ID'], how='lef
 
 
 # output data to tsv files for data analysis in R
-anl_exit.to_csv("../data/analytic_exit.tsv", sep='\t')
-anl_first_exit2.to_csv("../data/analytic_first_exit.tsv", sep='\t')
+anl_exit.to_csv("./data/analytic_exit.tsv", sep='\t')
+anl_first_exit2.to_csv("./data/analytic_first_exit.tsv", sep='\t')
 
