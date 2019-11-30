@@ -27,7 +27,7 @@ demog_plot=ggplot(filter(first_entry, !is.na(Client.Gender), !is.na(Client.Prima
   labs(x = 'Age at First Entry', y = 'Number of Clients', title = 'Figure 1. Client Demographics at Entry')+
   scale_fill_discrete(name = "Race", labels = c("Black", "White", "Other"))+
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.title = element_text(hjust = -.8, vjust=2.12, size=12))
+        plot.title = element_text(size=14))
 demog_plot
 
 ## save age/race/gender bar plot
@@ -52,7 +52,7 @@ veteran_plot = ggplot(data=veteran, aes(x="", y=pct, fill=Client.Veteran.Status)
   theme_void()+
   geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
   labs(title="Figure 2. Percent Distribution of Veteran Status at Entry", fill='Veteran Status')+
-  theme(plot.title = element_text(size=12))
+  theme(plot.title = element_text(size=14))
 veteran_plot
 
 ## save veteran pie chart
@@ -75,7 +75,7 @@ domestic_violence_plot = ggplot(data=domestic_violence, aes(x="", y=pct, fill=Do
   theme_void()+
   geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
   labs(title="Figure 3. Percent Distribution of Domestic Violence\n Survivors at Entry", fill='Survivor')+
-  theme(plot.title = element_text(size=12))
+  theme(plot.title = element_text(size=14))
 domestic_violence_plot
 
 ## save domestic violence pie chart
@@ -96,7 +96,7 @@ prior_living_plot = ggplot(data=prior_living, aes(x="", y=pct, fill=Prior.Living
   theme_void()+
   geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
   labs(title="Figure 4. Percent Distribution of Living Situation\n Prior to Entry", fill='Living Situation')+
-  theme(plot.title = element_text(size=12))
+  theme(plot.title = element_text(size=14))
 prior_living_plot
 
 

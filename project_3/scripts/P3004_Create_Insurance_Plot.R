@@ -40,7 +40,7 @@ health_ins_entry_plot = ggplot(data=health_ins_entry2, aes(x=Type, y=Freq, fill=
                             'State CHIP',
                             'State Health Insurance',
                             'VA Medical Services'))+
-  theme(plot.title = element_text(hjust = 1.15, vjust=1, size=12))
+  theme(plot.title = element_text(size=14))
 health_ins_entry_plot
 
 ggsave("./results/health_ins_entry_plot.png", health_ins_entry_plot)
@@ -81,7 +81,7 @@ health_ins_exit_plot = ggplot(data=health_ins_exit2, aes(x=Type, y=Freq, fill=Ca
                             'State CHIP',
                             'State Health Insurance',
                             'VA Medical Services'))+
-  theme(plot.title = element_text(hjust = 1.25, vjust=1, size=12))
+  theme(plot.title = element_text(size=14))
 health_ins_exit_plot
 
 ggsave("./results/health_ins_exit_plot.png", health_ins_exit_plot)

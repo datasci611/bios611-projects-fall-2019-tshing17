@@ -39,7 +39,7 @@ noncash_entry_plot = ggplot(data=noncash_entry2, aes(x=Type, y=Freq, fill=Catego
                             'TANF Child Care',
                             'TANF Transportation',
                             'Rental Assistance'))+
-  theme(plot.title = element_text(hjust = 1.4, vjust=1, size=12))
+  theme(plot.title = element_text(size=14))
 noncash_entry_plot
 
 ggsave("./results/noncash_entry_plot.png", noncash_entry_plot)
@@ -80,7 +80,7 @@ noncash_exit_plot = ggplot(data=noncash_exit2, aes(x=Type, y=Freq, fill=Category
                             'TANF Child Care',
                             'TANF Transportation',
                             'Rental Assistance'))+
-  theme(plot.title = element_text(hjust = 1.4, vjust=1, size=12))
+  theme(plot.title = element_text(size=14))
 noncash_exit_plot
 
 ggsave("./results/noncash_exit_plot.png", noncash_exit_plot)

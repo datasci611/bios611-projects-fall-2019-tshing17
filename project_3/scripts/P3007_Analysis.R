@@ -12,7 +12,7 @@ los_dist=ggplot(data=first_exit, aes(LOS))+
   labs(x='Length of First Stay (in days)', y='Number of Clients',
        title='Figure 11. Length of First Stay at Shelter')+
   scale_x_continuous(breaks = seq(0, 515, 50), lim = c(0, 515))+
-  theme(plot.title = element_text(hjust = -.4, vjust=2, size=12))
+  theme(plot.title = element_text(size=14))
 los_dist
 
 ggsave("./results/los_dist.png", los_dist)
@@ -32,7 +32,7 @@ destination_plot = ggplot(data=destination, aes(x="", y=pct, fill=Destination))+
   theme_void()+
   geom_text(aes(label = round(pct,2)), position = position_stack(vjust = 0.5), color = "white", size=4)+
   labs(title="Figure 12. Percent Distribution of Destination at Exit", fill='Destination')+
-  theme(plot.title = element_text(size=12))
+  theme(plot.title = element_text(size=14))
 destination_plot
 
 ## save prior living pie chart
@@ -43,7 +43,7 @@ returned_plot = ggplot(data=first_exit, aes(factor(returned), fill=factor(return
   geom_bar()+
   labs(x='Returned to Shelter?', y='Number of Clients',
        title="Figure 13. Frequency of Return to the Shelter")+
-  theme(plot.title = element_text(hjust = -.7, vjust=1.5,size=12),
+  theme(plot.title = element_text(size=14),
         legend.position = "none")+
     scale_x_discrete(labels = c('No', 'Yes'))
 

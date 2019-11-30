@@ -45,7 +45,7 @@ disab_entry_plot = ggplot(data=disab_entry2, aes(x=factor(Type), y=Freq, fill=Ca
                               'Physical',
                               'Physical (medical)',
                               'Vision Impaired'))+
-  theme(plot.title = element_text(hjust = 1.9, vjust=1, size=12))
+  theme(plot.title = element_text(size=14))
 disab_entry_plot
 
 ggsave("./results/disab_entry_plot.png", disab_entry_plot)
@@ -90,7 +90,7 @@ disab_exit_plot = ggplot(data=disab_exit2, aes(x=factor(Type), y=Freq, fill=Cate
                               'Physical',
                               'Physical (medical)',
                               'Vision Impaired'))+
-  theme(plot.title = element_text(hjust = 2.1, vjust=1, size=12))
+  theme(plot.title = element_text(size=14))
 disab_exit_plot
 
 ggsave("./results/disab_exit_plot.png", disab_exit_plot)
